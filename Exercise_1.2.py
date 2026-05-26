@@ -19,6 +19,7 @@ from typing import Optional
 from dotenv import load_dotenv
 from openai import OpenAI
 from bs4 import BeautifulSoup
+import urllib.request
 
 load_dotenv()
 
@@ -436,8 +437,14 @@ def scrape_page(url: str) -> str:
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
-        page.goto(url, wait_until="domcontentloaded", timeout=30_000)
+        page = browser.new_page(
+            user_agent=(
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/124.0.0.0 Safari/537.36"
+            )
+        )
+        page.goto(url, wait_until="domcontentloaded", timeout=60_000)
         html = page.content()
         browser.close()
 
@@ -450,6 +457,77 @@ def scrape_page(url: str) -> str:
     return soup.get_text(separator="\n", strip=True)
 
 
+def scrape_rss(rss_url: str) -> str:
+    """ดึงข่าวจาก RSS feed — ใช้เป็น fallback สำหรับเว็บที่ block Playwright"""
+    req = urllib.request.Request(
+        rss_url,
+        headers={"User-Agent": "Mozilla/5.0"},
+    )
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        xml = resp.read().decode("utf-8", errors="ignore")
+    soup = BeautifulSoup(xml, "xml")
+    items = soup.find_all("item")
+    lines = []
+    for item in items:
+        title = item.find("title")
+        desc = item.find("description")
+        if title:
+            lines.append(f"## {title.get_text(strip=True)}")
+        if desc:
+            lines.append(desc.get_text(strip=True))
+        lines.append("")
+    return "\n".join(lines)
+
+
+# RSS feeds สำหรับเว็บที่ block scraping
+RSS_FEEDS: dict[str, str] = {
+    "bbc.com":            "https://feeds.bbci.co.uk/news/rss.xml",
+    "bbc.co.uk":          "https://feeds.bbci.co.uk/news/rss.xml",
+    "washingtonpost.com": "https://feeds.washingtonpost.com/rss/national",
+}
+
+# เว็บที่ block ทั้ง scraping และ RSS
+BLOCKED_SITES: dict[str, str] = {
+    "reuters.com": "Reuters ปิด public RSS feed แล้ว — ลองใช้ BBC, CNN, หรือ AP News แทน",
+}
+
+MIN_CONTENT_LENGTH = 500
+
+
+def _fallback_to_rss(url: str, reason: str) -> str:
+    """พยายามใช้ RSS แทน scraping — raise ValueError ถ้าไม่มี RSS สำหรับเว็บนั้น"""
+    blocked_msg = next((msg for d, msg in BLOCKED_SITES.items() if d in url), None)
+    if blocked_msg:
+        raise ValueError(f"ไม่สามารถดึงข้อมูลจากเว็บนี้ได้ — {blocked_msg}")
+
+    rss_domain = next((d for d in RSS_FEEDS if d in url), None)
+    if rss_domain:
+        print(f"⚠️  {reason} — เปลี่ยนเป็น RSS feed แทน")
+        return scrape_rss(RSS_FEEDS[rss_domain])
+
+    raise ValueError(f"{reason} — เว็บอาจบล็อก bot ลองใช้เว็บอื่นแทน")
+
+
+def summarize_news_from_url(url: str, manager: "LLMManager", provider: str = "ollama") -> ChatResult:
+    """ดึงข้อมูลจากเว็บแล้วสรุปข่าวเป็นภาษาไทย — ใช้ RSS อัตโนมัติถ้า scrape ไม่ได้"""
+    print(f"\n⏳ กำลังดึงข้อมูลจาก {url} ...")
+
+    try:
+        page_text = scrape_page(url)
+    except Exception as e:
+        page_text = _fallback_to_rss(url, f"scrape ไม่สำเร็จ ({type(e).__name__})")
+
+    if len(page_text) < MIN_CONTENT_LENGTH:
+        page_text = _fallback_to_rss(url, f"ดึงข้อมูลได้น้อยเกินไป ({len(page_text)} ตัวอักษร)")
+
+    print(f"✅ ดึงข้อมูลสำเร็จ ({len(page_text):,} ตัวอักษร)\n")
+    print("⏳ กำลังสรุปข่าว ...")
+    return manager.chat_with_template(
+        template_key="news_summary_thai",
+        content=page_text,
+        provider=provider,
+    )
+
 # =============================================================================
 # Entry Point
 # =============================================================================
@@ -460,20 +538,12 @@ if __name__ == "__main__":
     list_prompts()
 
     # ---- สรุปข่าวจาก CNN ----
-    NEWS_URL = "https://www.cnn.com"
+    # result1 = summarize_news_from_url("https://www.cnn.com", manager)
+    # print_result(result1)
+    result2 = summarize_news_from_url("https://www.thaipost.net/", manager)
+    print_result(result2)
 
-    print(f"\n⏳ กำลังดึงข้อมูลจาก {NEWS_URL} ...")
-    page_text = scrape_page(NEWS_URL)
-    print(f"✅ ดึงข้อมูลสำเร็จ ({len(page_text):,} ตัวอักษร)\n")
-
-    print("⏳ กำลังสรุปข่าว ...")
-    result = manager.chat_with_template(
-        template_key="news_summary_thai",
-        content=page_text,
-        provider="ollama",
-    )
-
-    print_result(result)
+    
 
     # ---- เปรียบเทียบหลาย model (uncomment เพื่อใช้งาน) ----
     # print("\n⏳ เปรียบเทียบคำตอบจากหลาย model ...")
