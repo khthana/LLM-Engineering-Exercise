@@ -8,6 +8,7 @@ from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
+import gradio as gr
 
 load_dotenv()
 
@@ -324,8 +325,6 @@ def run_prompt(
 # Gradio UI
 # =============================================================================
 
-import gradio as gr
-
 _manager = LLMManager()
 
 OPENAI_MODELS = [
@@ -367,11 +366,10 @@ def stream_with_openai(user_message: str, model: str, reasoning_effort: str):
 
 
 _dark_mode_js = """
-const url = new URL(window.location);
-if (url.searchParams.get('__theme') !== 'dark') {
-    url.searchParams.set('__theme', 'dark');
-    window.location.href = url.href;
+if (document.querySelector('gradio-app')) {
+    document.querySelector('gradio-app').classList.add('dark');
 }
+document.documentElement.classList.add('dark');
 """
 
 with gr.Blocks(title="OpenAI Chat") as demo:
