@@ -14,6 +14,7 @@ from langchain_ollama import ChatOllama
 load_dotenv()
 
 
+# เป็น Class สำหรับเก็บข้อมูลการตั้งค่าของแต่ละ Provider เช่น ชื่อ, คลาสที่ใช้ใน LangChain, โมเดลเริ่มต้น, ตัวแปรสภาพแวดล้อมสำหรับ API key, prefix ของ API key, และอื่นๆ
 @dataclass
 class ProviderConfig:
     name: str
@@ -24,7 +25,7 @@ class ProviderConfig:
     requires_key: bool = True
     base_url: Optional[str] = None
 
-
+# เป็น Class สำหรับเก็บผลลัพธ์ของการเรียกใช้งานโมเดลจากแต่ละ Provider รวมถึงข้อมูลต่างๆ เช่น ชื่อ Provider, โมเดลที่ใช้, เนื้อหาคำตอบ, สถานะความสำเร็จ, ข้อความแสดงข้อผิดพลาด (ถ้ามี), และจำนวนโทเค็นที่ใช้ใน prompt และ completion
 @dataclass
 class ChatResult:
     provider: str
@@ -37,6 +38,7 @@ class ChatResult:
     cached_tokens: Optional[int] = None
 
 
+# เป็นการสร้าง registry ของ Providers ที่รองรับ โดยแต่ละ Provider จะมีการกำหนดค่าต่างๆ ผ่าน ProviderConfig ซึ่งจะช่วยให้ LLMManager สามารถจัดการและเรียกใช้งานแต่ละ Provider ได้อย่างยืดหยุ่นและง่ายดาย
 PROVIDER_REGISTRY: dict[str, ProviderConfig] = {
     "openai": ProviderConfig(
         name="OpenAI",
@@ -83,12 +85,18 @@ PROVIDER_REGISTRY: dict[str, ProviderConfig] = {
 # LLMClient  (ใช้ LangChain)
 # =============================================================================
 
+# เป็น Class ที่ทำหน้าที่เป็นตัวกลางในการติดต่อกับแต่ละ Provider ผ่าน LangChain 
+# โดยจะมีการสร้าง instance ของโมเดลที่เหมาะสมตามการตั้งค่าของแต่ละ Provider 
+# และจัดการกับการส่งข้อความและรับผลลัพธ์จากโมเดล 
+# รวมถึงการจัดการข้อผิดพลาดที่อาจเกิดขึ้นระหว่างการเรียกใช้งานโมเดล
 class LLMClient:
     def __init__(self, provider_id: str, config: ProviderConfig, api_key: str):
         self.provider_id = provider_id
-        self.config = config
-        self._api_key = api_key
+        self.config = config    # คือ ProviderConfig ที่เก็บข้อมูลการตั้งค่าของ Provider นั้นๆ
 
+    # เป็นฟังก์ชันที่ใช้สร้าง instance ของโมเดลที่เหมาะสมตามการตั้งค่าของแต่ละ Provider 
+    # โดยจะตรวจสอบว่า Provider นั้นใช้คลาสอะไรใน LangChain และส่งค่า API key 
+    # และพารามิเตอร์อื่นๆ ที่จำเป็นในการสร้าง instance ของโมเดลนั้นๆ
     def _make_llm(self, model: str = None, reasoning_effort: str = None):
         m = model or self.config.default_model
         cls = self.config.langchain_cls
@@ -112,6 +120,8 @@ class LLMClient:
 
         raise ValueError(f"Unknown langchain_cls: '{cls}'")
 
+    # เป็นฟังก์ชันที่ใช้ส่งข้อความไปยังโมเดลของแต่ละ Provider และรับผลลัพธ์กลับมา 
+    # โดยจะมีการจัดการข้อผิดพลาดที่อาจเกิดขึ้นระหว่างการเรียกใช้งานโมเดล
     def chat(
         self,
         system_prompt: str,
@@ -124,7 +134,9 @@ class LLMClient:
             SystemMessage(content=system_prompt),
             HumanMessage(content=user_prompt),
         ]
-
+        # เป็นฟังก์ชันภายในที่ใช้แปลงผลลัพธ์ที่ได้รับจากโมเดลให้เป็นรูปแบบของ ChatResult 
+        # ซึ่งจะรวมข้อมูลต่างๆ เช่น ชื่อ Provider, โมเดลที่ใช้, เนื้อหาคำตอบ, 
+        # จำนวนโทเค็นที่ใช้ใน prompt และ completion รวมถึงข้อมูลการ cache ถ้ามี
         def _parse_result(response) -> ChatResult:
             usage = getattr(response, "usage_metadata", None) or {}
             cached = None
@@ -160,6 +172,9 @@ class LLMClient:
                 error=str(e),
             )
 
+    # เป็นฟังก์ชันที่ใช้ส่งข้อความไปยังโมเดลของแต่ละ Provider ในรูปแบบของการสตรีม streaming) 
+    # ซึ่งจะทำให้เราสามารถรับผลลัพธ์ได้เป็นส่วนๆ ขณะที่โมเดลกำลังประมวลผลอยู่ 
+    # โดยจะมีการจัดการข้อผิดพลาดที่อาจเกิดขึ้นระหว่างการเรียกใช้งานโมเดลเช่นเดียวกับฟังก์ชัน chat
     def stream_chat(
         self,
         system_prompt: str,
@@ -181,6 +196,7 @@ class LLMClient:
 # LLMManager
 # =============================================================================
 
+# เป็น Class ที่ทำหน้าที่จัดการและประสานงานกับ LLMClient หลายๆ ตัวที่เชื่อมต่อกับ Providers ต่างๆ
 class LLMManager:
     def __init__(self, registry: dict[str, ProviderConfig] = None):
         self._registry = registry or PROVIDER_REGISTRY
@@ -224,6 +240,9 @@ class LLMManager:
             raise ValueError(f"Provider '{provider}' unavailable: {reason}")
         return self._clients[provider]
 
+    # เป็นฟังก์ชันที่ใช้ส่งข้อความไปยังโมเดลของแต่ละ Provider ผ่าน LLMClient 
+    # ที่จัดการอยู่ใน LLMManager โดยจะรับพารามิเตอร์ต่างๆ เช่น system_prompt, user_prompt, provider, model, และ reasoning_effort 
+    # และจะส่งต่อไปยัง LLMClient ที่เกี่ยวข้องเพื่อทำการเรียกใช้งานโมเดลและรับผลลัพธ์กลับมาในรูปแบบของ ChatResult
     def chat(
         self,
         system_prompt: str,
@@ -259,66 +278,65 @@ def _messages_to_system_user(messages: list[dict]) -> tuple[str, str]:
 
 
 # =============================================================================
-# Multi-provider prompt runner
+# Prompt runner
 # =============================================================================
 
+# เป็นฟังก์ชันที่ใช้รันข้อความสนทนากับ Provider ที่ระบุ โดยรับพารามิเตอร์ต่างๆ
+# เช่น messages, provider, manager, model, และ reasoning_effort
+# และจะส่งข้อความไปยัง Provider ผ่าน LLMManager และรับผลลัพธ์กลับมาในรูปแบบของ
+# ChatResult ซึ่งจะรวมข้อมูลต่างๆ เช่น ชื่อ Provider, โมเดลที่ใช้, เนื้อหาคำตอบ, สถานะความสำเร็จ,
+# ข้อความแสดงข้อผิดพลาด (ถ้ามี), และจำนวนโทเค็นที่ใช้ใน prompt และ completion
 def run_prompt(
     messages: list[dict],
-    providers: list[str] | None = None,
+    provider: str,
     manager: LLMManager | None = None,
-    model_overrides: dict[str, str] | None = None,
+    model: str | None = None,
     reasoning_effort: str | None = None,
-) -> list[ChatResult]:
-    """Run the same conversation messages against one or more providers.
+) -> ChatResult:
+    """Run conversation messages against a single provider.
 
     Args:
         messages:          OpenAI-style list of {"role": ..., "content": ...} dicts.
-        providers:         Provider IDs to query.  Defaults to all available providers.
+        provider:          Provider ID to query (e.g. "openai", "openrouter").
         manager:           Shared LLMManager instance.  Created automatically if omitted.
-        model_overrides:   Optional per-provider model override, e.g. {"openai": "gpt-4o"}.
+        model:             Optional model override, e.g. "gpt-4o".
         reasoning_effort:  "low" | "medium" | "high" — passed to providers that support it.
 
     Returns:
-        List of ChatResult, one per provider.
+        ChatResult for the provider.
     """
     if manager is None:
         manager = LLMManager()
 
-    targets = providers if providers is not None else manager.available_providers
     system_prompt, user_prompt = _messages_to_system_user(messages)
-    model_overrides = model_overrides or {}
 
-    results: list[ChatResult] = []
-    for provider_id in targets:
-        model = model_overrides.get(provider_id)
-        label = f"Provider: {provider_id}" + (f" | reasoning: {reasoning_effort}" if reasoning_effort else "")
-        print_separator(label)
-        try:
-            result = manager.chat(system_prompt, user_prompt, provider_id, model, reasoning_effort)
-        except ValueError as exc:
-            result = ChatResult(provider=provider_id, model=model or "?", content="", success=False, error=str(exc))
+    label = f"Provider: {provider}" + (f" | reasoning: {reasoning_effort}" if reasoning_effort else "")
+    print_separator(label)
+    try:
+        result = manager.chat(system_prompt, user_prompt, provider, model, reasoning_effort)
+    except ValueError as exc:
+        result = ChatResult(provider=provider, model=model or "?", content="", success=False, error=str(exc))
 
-        if result.success:
-            print(f"Model  : {result.model}")
-            print(f"Answer : {result.content}")
-            if result.prompt_tokens is not None:
-                print(f"Input  : {result.prompt_tokens} tokens")
-            if result.completion_tokens is not None:
-                print(f"Output : {result.completion_tokens} tokens")
-            if result.cached_tokens is not None:
-                print(f"Cached : {result.cached_tokens} tokens")
+    if result.success:
+        print(f"Model  : {result.model}")
+        print(f"Answer : {result.content}")
+        if result.prompt_tokens is not None:
+            print(f"Input  : {result.prompt_tokens} tokens")
+        if result.completion_tokens is not None:
+            print(f"Output : {result.completion_tokens} tokens")
+        if result.cached_tokens is not None:
+            print(f"Cached : {result.cached_tokens} tokens")
+    else:
+        error_str = result.error or ""
+        if "429" in error_str:
+            retry_match = re.search(r"retry[^0-9]*([0-9]+(?:\.[0-9]+)?)s", error_str, re.IGNORECASE)
+            retry_hint = f" (retry in {float(retry_match.group(1)):.0f}s)" if retry_match else ""
+            print(f"Error : 429 Rate limit / Quota exceeded{retry_hint}")
         else:
-            error_str = result.error or ""
-            if "429" in error_str:
-                retry_match = re.search(r"retry[^0-9]*([0-9]+(?:\.[0-9]+)?)s", error_str, re.IGNORECASE)
-                retry_hint = f" (retry in {float(retry_match.group(1)):.0f}s)" if retry_match else ""
-                print(f"Error : 429 Rate limit / Quota exceeded{retry_hint}")
-            else:
-                print(f"Error : {error_str}")
-        results.append(result)
+            print(f"Error : {error_str}")
 
     print_separator()
-    return results
+    return result
 
 
 # =============================================================================
@@ -341,11 +359,11 @@ if __name__ == "__main__":
     print_separator("Hard Puzzle — คำถาม")
     print(question)
 
-    run_prompt(hard_puzzle, providers=["openai"],
-               manager=manager, model_overrides={"openai": "gpt-5"}, reasoning_effort="low")
+    run_prompt(hard_puzzle, provider="openai",
+               manager=manager, model="gpt-5", reasoning_effort="low")
 
-    run_prompt(hard_puzzle, providers=["openrouter"],
-               manager=manager, model_overrides={"openrouter": "qwen/qwen3.6-35b-a3b"})
+    run_prompt(hard_puzzle, provider="openrouter",
+               manager=manager, model="qwen/qwen3.6-35b-a3b")
 
-    run_prompt(hard_puzzle, providers=["openrouter"],
-               manager=manager, model_overrides={"openrouter": "google/gemma-4-31b-it"})
+    run_prompt(hard_puzzle, provider="openrouter",
+               manager=manager, model="google/gemma-4-31b-it")
