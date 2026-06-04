@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>อธิบาย Exercise_2.6.py</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      line-height: 1.7;
+      padding: 2rem 1rem;
+    }
+
+    .container { max-width: 900px; margin: 0 auto; }
+
+    h1 { font-size: 1.8rem; font-weight: 700; color: #a78bfa; margin-bottom: 0.2rem; }
+    .subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 2.5rem; }
+
+    h2 {
+      font-size: 1.2rem; font-weight: 600; color: #7dd3fc;
+      margin: 2rem 0 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    h3 { font-size: 1rem; font-weight: 600; color: #f1f5f9; margin: 1.2rem 0 0.4rem; }
+    p  { margin-bottom: 0.6rem; color: #cbd5e1; }
+
+    /* Diff table */
+    .diff-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 0.88rem; }
+    .diff-table th {
+      background: #1e293b; color: #94a3b8;
+      font-weight: 600; text-align: left;
+      padding: 0.5rem 0.8rem; border: 1px solid #334155;
+    }
+    .diff-table td { padding: 0.45rem 0.8rem; border: 1px solid #1e293b; color: #cbd5e1; }
+    .diff-table tr:nth-child(even) td { background: #111827; }
+    .diff-table .old { color: #f87171; }
+    .diff-table .new { color: #86efac; }
+
+    /* Layer cards */
+    .layer {
+      background: #1e293b; border: 1px solid #334155;
+      border-radius: 10px; padding: 1.2rem 1.5rem; margin-bottom: 1rem;
+    }
+    .layer-title {
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: #94a3b8; margin-bottom: 0.8rem;
+    }
+    .item { margin-bottom: 0.9rem; }
+    .desc { color: #94a3b8; font-size: 0.9rem; }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 0.82rem;
+      background: #312e81; color: #a5b4fc;
+      border: 1px solid #4338ca;
+      border-radius: 5px; padding: 0.1rem 0.5rem; margin-right: 0.4rem;
+    }
+    .badge.green  { background: #14532d; color: #86efac; border-color: #16a34a; }
+    .badge.orange { background: #431407; color: #fdba74; border-color: #c2410c; }
+    .badge.pink   { background: #500724; color: #f9a8d4; border-color: #be185d; }
+    .badge.db     { background: #0c2340; color: #7dd3fc; border-color: #1d4ed8; }
+
+    ul.methods { list-style: none; margin: 0.4rem 0 0 0.5rem; }
+    ul.methods li { font-size: 0.88rem; color: #94a3b8; padding: 0.15rem 0; }
+    ul.methods li::before { content: "→ "; color: #475569; }
+    ul.methods code { font-family: 'Cascadia Code','Fira Code',monospace; color: #7dd3fc; font-size: 0.85rem; }
+
+    /* Schema box */
+    .schema-box {
+      background: #0d1117; border: 1px solid #1d4ed8;
+      border-left: 3px solid #3b82f6;
+      border-radius: 0 8px 8px 0;
+      padding: 0.9rem 1.1rem; margin: 0.7rem 0;
+    }
+    .schema-box .col-row { display: flex; gap: 0.8rem; margin: 0.15rem 0; font-size: 0.85rem; }
+    .schema-box .col-name { color: #7dd3fc; font-family: monospace; min-width: 140px; }
+    .schema-box .col-type { color: #fbbf24; font-family: monospace; min-width: 80px; }
+    .schema-box .col-note { color: #64748b; font-size: 0.8rem; }
+
+    /* Seed table */
+    .seed-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem;
+      margin: 0.8rem 0;
+    }
+    .seed-card {
+      background: #0d1117; border: 1px solid #21262d;
+      border-radius: 8px; padding: 0.8rem 1rem;
+    }
+    .seed-card .cat-label {
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: #64748b; margin-bottom: 0.4rem;
+    }
+    .seed-card .cat-item { font-size: 0.82rem; color: #94a3b8; padding: 0.1rem 0; }
+    .seed-card .cat-item .id { color: #a5b4fc; font-family: monospace; }
+    .seed-card .cat-item .disc { color: #f87171; font-size: 0.76rem; }
+
+    pre {
+      background: #0d1117; border: 1px solid #21262d;
+      border-radius: 8px; padding: 1rem 1.2rem;
+      overflow-x: auto;
+      font-family: 'Cascadia Code','Fira Code','Consolas',monospace;
+      font-size: 0.82rem; line-height: 1.6; margin: 0.8rem 0;
+    }
+    .kw  { color: #ff7b72; }
+    .fn  { color: #d2a8ff; }
+    .str { color: #a5d6ff; }
+    .cm  { color: #8b949e; }
+    .hl  { color: #ffa657; }
+    .gr  { color: #7ee787; }
+
+    /* Answer box */
+    .answer-box {
+      background: #0f2d1a; border: 1px solid #166534;
+      border-radius: 8px; padding: 1rem 1.2rem; margin: 0.8rem 0; font-size: 0.95rem;
+    }
+    .answer-box .tag {
+      display: inline-block; background: #166534; color: #86efac;
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; border-radius: 4px; padding: 0.1rem 0.45rem; margin-bottom: 0.5rem;
+    }
+
+    /* Callout */
+    .callout {
+      background: #1a1a2e; border-left: 3px solid #a78bfa;
+      border-radius: 0 8px 8px 0; padding: 1rem 1.2rem;
+      margin: 1rem 0; font-size: 0.92rem;
+    }
+    .callout strong { color: #c4b5fd; }
+
+    /* Multi-tool highlight */
+    .multi-callout {
+      background: #1c1917; border-left: 3px solid #f59e0b;
+      border-radius: 0 8px 8px 0; padding: 1rem 1.2rem;
+      margin: 1rem 0; font-size: 0.92rem;
+    }
+    .multi-callout strong { color: #fbbf24; }
+
+    /* Flow */
+    .flow-box {
+      background: #0d1117; border: 1px solid #21262d;
+      border-radius: 8px; padding: 1.2rem 1.5rem;
+      font-family: 'Cascadia Code','Fira Code',monospace;
+      font-size: 0.82rem; line-height: 2;
+      white-space: pre; overflow-x: auto;
+    }
+    .flow-box .arrow  { color: #475569; }
+    .flow-box .node   { color: #7dd3fc; }
+    .flow-box .action { color: #86efac; }
+    .flow-box .end    { color: #f9a8d4; }
+    .flow-box .label  { color: #94a3b8; }
+    .flow-box .db     { color: #fbbf24; }
+
+    /* DB lifecycle */
+    .lifecycle {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;
+    }
+    .lc-card {
+      background: #0d1117; border: 1px solid #21262d;
+      border-radius: 8px; padding: 0.9rem 1rem;
+    }
+    .lc-card .lc-title {
+      font-size: 0.75rem; font-weight: 700; color: #64748b;
+      text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.5rem;
+    }
+    .lc-card .lc-step { font-size: 0.85rem; color: #94a3b8; padding: 0.1rem 0; }
+    .lc-card .lc-step .arrow { color: #475569; }
+    .lc-card .lc-step .ok { color: #86efac; }
+    .lc-card .lc-step .skip { color: #64748b; font-style: italic; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <h1>📄 Exercise_2.6.py</h1>
+  <p class="subtitle">KeyCraft Chatbot — Ollama + SQLite + Tool Use (4 หมวดสินค้า)</p>
+
+  <!-- DIFF TABLE -->
+  <h2>🔄 ความแตกต่างจาก Exercise_2.5</h2>
+  <table class="diff-table">
+    <tr>
+      <th>จุด</th>
+      <th>2.5 (เดิม)</th>
+      <th>2.6 (ใหม่)</th>
+    </tr>
+    <tr>
+      <td>ข้อมูลสินค้า</td>
+      <td class="old">Python dict <code>PRODUCTS</code></td>
+      <td class="new">SQLite <code>keycraft.db</code></td>
+    </tr>
+    <tr>
+      <td>จำนวนสินค้า</td>
+      <td class="old">7 (4 kb + 3 mouse)</td>
+      <td class="new">16 (6 kb + 4 mouse + 3 headset + 3 mousepad)</td>
+    </tr>
+    <tr>
+      <td>Tools</td>
+      <td class="old"><code>list_keyboards()</code> + <code>list_mice()</code></td>
+      <td class="new"><code>get_products(category)</code> ตัวเดียว</td>
+    </tr>
+    <tr>
+      <td>DB lifecycle</td>
+      <td class="old">ไม่มี</td>
+      <td class="new">persist ข้ามรัน, seed ถ้าตารางว่าง</td>
+    </tr>
+    <tr>
+      <td>โปรโมชั่น</td>
+      <td class="old">Mouse ลด 50%</td>
+      <td class="new">Mouse 50% | Headset 20% | Mousepad 30%</td>
+    </tr>
+  </table>
+
+  <!-- ARCHITECTURE -->
+  <h2>🏗 โครงสร้างโปรแกรม</h2>
+
+  <!-- Data Layer -->
+  <div class="layer">
+    <div class="layer-title">Data Layer</div>
+    <div class="item">
+      <span class="badge">ProviderConfig</span><span class="badge orange">dataclass</span>
+      <p class="desc">เก็บ config ของแต่ละ AI provider — ชื่อ, LangChain class, default model, API key, base URL</p>
+    </div>
+    <div class="item">
+      <span class="badge">ChatResult</span><span class="badge orange">dataclass</span>
+      <p class="desc">ห่อผลลัพธ์จาก LLM — ข้อความตอบ, provider, token count, error (ถ้ามี)</p>
+    </div>
+    <div class="item">
+      <span class="badge">PROVIDER_REGISTRY</span><span class="badge orange">dict</span>
+      <p class="desc">ตาราง config ของทุก provider (ollama, openai, claude, gemini, openrouter)</p>
+    </div>
+  </div>
+
+  <!-- Core Layer -->
+  <div class="layer">
+    <div class="layer-title">Core Classes</div>
+    <div class="item">
+      <span class="badge pink">LLMClient</span>
+      <p class="desc">Wrapper รอบ LangChain สำหรับ provider เดียว</p>
+      <ul class="methods">
+        <li><code>_make_llm()</code> — สร้าง LangChain object ตาม provider</li>
+        <li><code>chat()</code> — invoke แบบ non-streaming</li>
+        <li><code>stream_messages()</code> — stream response ทีละ chunk</li>
+      </ul>
+    </div>
+    <div class="item">
+      <span class="badge pink">LLMManager</span>
+      <p class="desc">จัดการ LLMClient ทุกตัวพร้อมกัน — validate key, สร้าง client, expose available providers</p>
+    </div>
+  </div>
+
+  <!-- SQLite Layer -->
+  <div class="layer">
+    <div class="layer-title">SQLite Layer ✨ ใหม่ใน 2.6</div>
+
+    <div class="item">
+      <span class="badge db">SEED_DATA</span><span class="badge orange">list[tuple]</span>
+      <p class="desc">ข้อมูลสินค้า 16 รายการ 4 ประเภท รอ insert เข้า DB ครั้งแรก</p>
+    </div>
+
+    <div class="seed-grid">
+      <div class="seed-card">
+        <div class="cat-label">⌨️ Keyboards (6 รุ่น)</div>
+        <div class="cat-item"><span class="id">KC-K1</span> Pro 75% Wireless — ฿3,490</div>
+        <div class="cat-item"><span class="id">KC-K2</span> TKL Mechanical — ฿2,990</div>
+        <div class="cat-item"><span class="id">KC-K3</span> 65% Compact — ฿2,490</div>
+        <div class="cat-item"><span class="id">KC-K4</span> Mini 60% — ฿1,990</div>
+        <div class="cat-item"><span class="id">KC-K5</span> Full-size 100% — ฿3,990</div>
+        <div class="cat-item"><span class="id">KC-K6</span> Split Ergonomic — ฿5,490</div>
+      </div>
+      <div class="seed-card">
+        <div class="cat-label">🖱️ Mice (4 รุ่น, ลด 50%)</div>
+        <div class="cat-item"><span class="id">KC-M1</span> Wireless Ergonomic — ฿900 <span class="disc">ลด 50%</span></div>
+        <div class="cat-item"><span class="id">KC-M2</span> Gaming Precision — ฿700 <span class="disc">ลด 50%</span></div>
+        <div class="cat-item"><span class="id">KC-M3</span> Silent Travel — ฿600 <span class="disc">ลด 50%</span></div>
+        <div class="cat-item"><span class="id">KC-M4</span> Vertical Ergonomic — ฿850 <span class="disc">ลด 50%</span></div>
+      </div>
+      <div class="seed-card">
+        <div class="cat-label">🎧 Headsets (3 รุ่น, บางรุ่นลด 20%)</div>
+        <div class="cat-item"><span class="id">KC-H1</span> Gaming 7.1 Surround — ฿2,490 <span class="disc">ลด 20%</span></div>
+        <div class="cat-item"><span class="id">KC-H2</span> Wireless Studio — ฿3,990</div>
+        <div class="cat-item"><span class="id">KC-H3</span> Budget Clear Voice — ฿990 <span class="disc">ลด 20%</span></div>
+      </div>
+      <div class="seed-card">
+        <div class="cat-label">🖱 Mousepads (3 รุ่น, บางรุ่นลด 30%)</div>
+        <div class="cat-item"><span class="id">KC-P1</span> XXL Speed Pad — ฿490 <span class="disc">ลด 30%</span></div>
+        <div class="cat-item"><span class="id">KC-P2</span> RGB Gaming Pad — ฿890</div>
+        <div class="cat-item"><span class="id">KC-P3</span> Desk Mat Leather — ฿1,290 <span class="disc">ลด 30%</span></div>
+      </div>
+    </div>
+
+    <div class="item" style="margin-top:0.8rem">
+      <span class="badge db">Schema: products</span>
+      <div class="schema-box">
+        <div class="col-row"><span class="col-name">id</span><span class="col-type">TEXT PK</span><span class="col-note">รหัสสินค้า เช่น KC-K1</span></div>
+        <div class="col-row"><span class="col-name">category</span><span class="col-type">TEXT</span><span class="col-note">keyboards | mice | headsets | mousepads</span></div>
+        <div class="col-row"><span class="col-name">name</span><span class="col-type">TEXT</span><span class="col-note">ชื่อสินค้า</span></div>
+        <div class="col-row"><span class="col-name">price</span><span class="col-type">INTEGER</span><span class="col-note">ราคาขาย (บาท)</span></div>
+        <div class="col-row"><span class="col-name">original_price</span><span class="col-type">INTEGER?</span><span class="col-note">NULL = ไม่มีส่วนลด</span></div>
+        <div class="col-row"><span class="col-name">description</span><span class="col-type">TEXT</span><span class="col-note">รายละเอียดสินค้า</span></div>
+      </div>
+    </div>
+
+    <div class="item">
+      <span class="badge db">_get_conn()</span>
+      <p class="desc">เปิด SQLite connection ไปยัง <code>keycraft.db</code> ใน working directory</p>
+    </div>
+    <div class="item">
+      <span class="badge db">_init_db()</span>
+      <p class="desc">เรียกตอน import — CREATE TABLE ถ้ายังไม่มี, INSERT seed data ถ้าตารางว่าง</p>
+    </div>
+  </div>
+
+  <!-- Shop Layer -->
+  <div class="layer">
+    <div class="layer-title">Shop Layer</div>
+    <div class="item">
+      <span class="badge green">get_products(category)</span><span class="badge orange">@tool</span>
+      <p class="desc">Tool เดียวรองรับทุก category — query DB ด้วย <code>WHERE category = ?</code> แล้ว format ราคา (รวมส่วนลดถ้ามี)</p>
+    </div>
+    <div class="item">
+      <span class="badge">SHOP_TOOLS</span>
+      <p class="desc"><code>[get_products]</code> — ส่งให้ <code>bind_tools()</code> เพื่อให้ LLM รู้ว่ามี tool ใดบ้าง</p>
+    </div>
+  </div>
+
+  <!-- UI Layer -->
+  <div class="layer">
+    <div class="layer-title">UI Layer (Gradio)</div>
+    <div class="item">
+      <span class="badge pink">chat_fn()</span>
+      <p class="desc">Gradio callback หลัก — tool-call loop + แสดง "✨ กำลังค้นหาข้อมูล..." ระหว่างรอ</p>
+    </div>
+    <div class="item">
+      <span class="badge">update_model_dropdown()</span>
+      <span class="badge">update_reasoning_visibility()</span>
+      <p class="desc">อัพเดต UI เมื่อ user เปลี่ยน provider หรือ model</p>
+    </div>
+  </div>
+
+  <!-- TOOL QUESTION -->
+  <h2>🤔 LLM เรียก Tool เองไหม?</h2>
+
+  <div class="answer-box">
+    <span class="tag">คำตอบ</span>
+    <p><strong>โปรแกรมนี้เป็นคนเรียก</strong> — LLM แค่บอก "ฉันอยากเรียก get_products('headsets')" กลับมาเป็น structured data แล้วโปรแกรม query SQLite จริง</p>
+  </div>
+
+  <h3>สิ่งที่ LLM ส่งกลับมา</h3>
+  <pre><span class="hl">response.tool_calls</span> = [
+  { <span class="str">"name"</span>: <span class="str">"get_products"</span>, <span class="str">"args"</span>: {<span class="str">"category"</span>: <span class="str">"headsets"</span>}, <span class="str">"id"</span>: <span class="str">"call_abc"</span> }
+]</pre>
+
+  <h3>โปรแกรมเรียก Python + query SQLite จริงใน <code>chat_fn()</code></h3>
+  <pre><span class="kw">for</span> tc <span class="kw">in</span> response.tool_calls:
+    <span class="kw">if</span> tc[<span class="str">"name"</span>] <span class="kw">in</span> tool_map:
+        result = tool_map[tc[<span class="str">"name"</span>]].<span class="fn">invoke</span>(tc[<span class="str">"args"</span>])   <span class="cm"># → query keycraft.db</span>
+        current_messages.<span class="fn">append</span>(<span class="fn">ToolMessage</span>(content=<span class="fn">str</span>(result), tool_call_id=tc[<span class="str">"id"</span>]))</pre>
+
+  <!-- MULTI TOOL -->
+  <h2>⚡ กรณีถามสินค้าหลายประเภทพร้อมกัน</h2>
+
+  <div class="multi-callout">
+    <strong>tool เดียวรับ multiple calls ได้</strong> — เมื่อถาม "มี keyboard และ headset อะไรบ้าง?" LLM เรียก tool 2 ครั้งในรอบเดียว
+  </div>
+
+  <pre><span class="hl">response.tool_calls</span> = [
+  { <span class="str">"name"</span>: <span class="str">"get_products"</span>, <span class="str">"args"</span>: {<span class="str">"category"</span>: <span class="str">"keyboards"</span>}, <span class="str">"id"</span>: <span class="str">"call_001"</span> },
+  { <span class="str">"name"</span>: <span class="str">"get_products"</span>, <span class="str">"args"</span>: {<span class="str">"category"</span>: <span class="str">"headsets"</span>},  <span class="str">"id"</span>: <span class="str">"call_002"</span> }
+]</pre>
+
+  <p>loop ใน <code>chat_fn</code> วนผ่านทุก tool_calls ก่อน invoke ครั้งถัดไป — ทำให้ไม่ต้องเพิ่ม tool ใหม่เมื่อมี category เพิ่มขึ้น</p>
+
+  <!-- FLOW -->
+  <h2>🔄 Flow การทำงาน</h2>
+
+  <div class="flow-box"><span class="node">User พิมพ์คำถาม</span>
+       <span class="arrow">│</span>
+       <span class="arrow">▼</span>
+<span class="action">chat_fn()</span> สร้าง llm_with_tools
+   = client._make_llm().bind_tools(SHOP_TOOLS)
+       <span class="arrow">│</span>
+       <span class="arrow">▼</span>
+<span class="node">llm_with_tools.invoke(messages)</span>   <span class="label">← LLM ตัดสินใจ category ที่ต้องการ</span>
+       <span class="arrow">│</span>
+   <span class="arrow">┌───┴──────────────────────────────┐</span>
+   <span class="label">│ response.tool_calls มีข้อมูล     │ response.tool_calls ว่าง</span>
+   <span class="arrow">▼</span>                                 <span class="arrow">▼</span>
+<span class="action">แสดง "✨ กำลังค้นหาข้อมูล..."</span>      <span class="end">แสดงคำตอบ → จบ</span>
+       <span class="arrow">│</span>
+       <span class="arrow">▼</span>
+<span class="db">get_products(category) → query keycraft.db</span>
+   (SELECT ... WHERE category = ? → format string)
+       <span class="arrow">│</span>
+       <span class="arrow">▼</span>
+<span class="action">เพิ่ม ToolMessage เข้า messages</span>
+       <span class="arrow">│</span>
+       <span class="arrow">▼</span>
+<span class="node">invoke() อีกครั้ง</span> → LLM ใช้ผลลัพธ์ตอบ</div>
+
+  <!-- DB LIFECYCLE -->
+  <h2>🗄️ DB Lifecycle</h2>
+
+  <div class="lifecycle">
+    <div class="lc-card">
+      <div class="lc-title">รันครั้งแรก (ไม่มี keycraft.db)</div>
+      <div class="lc-step"><span class="arrow">→</span> <code>_init_db()</code> เรียก</div>
+      <div class="lc-step"><span class="arrow">→</span> CREATE TABLE <span class="ok">✓</span></div>
+      <div class="lc-step"><span class="arrow">→</span> COUNT = 0 → INSERT 16 rows</div>
+      <div class="lc-step"><span class="arrow">→</span> <span class="ok">"seeded 16 products"</span></div>
+    </div>
+    <div class="lc-card">
+      <div class="lc-title">รันครั้งถัดไป (มี keycraft.db)</div>
+      <div class="lc-step"><span class="arrow">→</span> <code>_init_db()</code> เรียก</div>
+      <div class="lc-step"><span class="arrow">→</span> CREATE TABLE IF NOT EXISTS <span class="skip">(ข้าม)</span></div>
+      <div class="lc-step"><span class="arrow">→</span> COUNT = 16 → <span class="skip">ไม่ seed</span></div>
+      <div class="lc-step"><span class="arrow">→</span> <span class="ok">"loaded (existing data)"</span></div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Reset data:</strong> ลบไฟล์ <code>keycraft.db</code> แล้วรันใหม่ — โปรแกรมจะ seed ข้อมูลเริ่มต้นให้อัตโนมัติ
+  </div>
+
+</div>
+</body>
+</html>
