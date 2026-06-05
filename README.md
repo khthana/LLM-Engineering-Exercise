@@ -139,11 +139,11 @@ python Exercise_3_1.py
 
 ### Output Files
 
-The script generates:
-- **output_sdxl_turbo.png** — Fast generation (4 steps, ~5 sec)
-- **output_sdxl_base.png** — Quality generation (30 steps, ~20 sec)
-- **output_sdxl_base_refiner.png** — Refined quality (80/20 split, ~60 sec)
-- **output_speech.wav** — Text-to-speech audio (optional)
+The script generates outputs in `outputs/` subfolder:
+- **outputs/output_sdxl_turbo.png** — Fast generation (4 steps, ~5 sec)
+- **outputs/output_sdxl_base.png** — Quality generation (30 steps, ~20 sec)
+- **outputs/output_sdxl_base_refiner.png** — Refined quality (80/20 split, ~60 sec)
+- **outputs/output_speech.wav** — Text-to-speech audio (optional)
 
 Example prompt: *"A class of data scientists learning AI engineering in a vibrant pop-art style"*
 

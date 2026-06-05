@@ -46,6 +46,7 @@ debug.log
 error.log
 
 # Generated outputs
+outputs/
 output_*.png
 output_*.wav
 output_*.json

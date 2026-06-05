@@ -10,6 +10,9 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 
+OUTPUT_DIR = Path("outputs")
+OUTPUT_DIR.mkdir(exist_ok=True)
+
 # ============================================================================
 # 1. GPU DETECTION
 # ============================================================================
@@ -91,7 +94,7 @@ def run_sdxl_turbo():
             guidance_scale=0.0
         ).images[0]
 
-        output_path = Path("output_sdxl_turbo.png")
+        output_path = OUTPUT_DIR / "output_sdxl_turbo.png"
         image.save(output_path)
         print(f"[OK] Saved to {output_path}")
 
@@ -129,7 +132,7 @@ def run_sdxl_base():
 
         image = pipe(prompt=prompt, num_inference_steps=30).images[0]
 
-        output_path = Path("output_sdxl_base.png")
+        output_path = OUTPUT_DIR / "output_sdxl_base.png"
         image.save(output_path)
         print(f"[OK] Saved to {output_path}")
 
@@ -198,7 +201,7 @@ def run_sdxl_base_refiner():
             image=image,
         ).images[0]
 
-        output_path = Path("output_sdxl_base_refiner.png")
+        output_path = OUTPUT_DIR / "output_sdxl_base_refiner.png"
         image.save(output_path)
         print(f"[OK] Saved to {output_path}")
 
@@ -248,7 +251,7 @@ def run_text_to_speech():
             forward_params={"speaker_embeddings": speaker_embedding}
         )
 
-        output_path = Path("output_speech.wav")
+        output_path = OUTPUT_DIR / "output_speech.wav"
         sf.write(str(output_path), speech["audio"], speech["sampling_rate"])
         print(f"[OK] Saved to {output_path}")
 
