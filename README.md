@@ -39,7 +39,6 @@ LLM-Engineering-Exercise/
 ├── outputs/                         # Generated images and audio
 ├── requirements.txt                 # Base dependencies (Week 1-2)
 ├── requirements-cuda.txt            # GPU dependencies (Week 3 - extends requirements.txt)
-├── REQUIREMENTS.md                  # Detailed setup & installation guide
 ├── README.md                        # This file
 ├── .env.example                     # Environment variables template
 ├── .gitignore                       # Git ignore rules
@@ -47,8 +46,6 @@ LLM-Engineering-Exercise/
 ```
 
 ## 🚀 Quick Start
-
-**For full setup instructions, see [REQUIREMENTS.md](REQUIREMENTS.md)**
 
 ```bash
 # 1. Clone & enter repo
@@ -234,6 +231,16 @@ python Exercise_3_1.py
 
 > **Requires:** NVIDIA GPU with 12GB VRAM, CUDA 12.1, `requirements-cuda.txt`
 
+## 🔑 API Keys
+
+| Service | Get your key |
+|---------|-------------|
+| **OpenAI** | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
+| **Anthropic Claude** | [console.anthropic.com](https://console.anthropic.com/) |
+| **Google Gemini** | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) |
+| **OpenRouter** | [openrouter.ai/keys](https://openrouter.ai/keys) |
+| **HuggingFace** | [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens) (read access) |
+
 ## 🛠️ Technology Stack
 
 | Component | Version | Use |
@@ -281,13 +288,40 @@ Running SDXL locally on RTX 3060:
 - **[Anthropic Claude](https://claude.ai)** — Advanced LLM API
 - **[OpenAI API](https://openai.com/api)** — GPT models
 
+## 🔧 Troubleshooting
+
+**"Torch not compiled with CUDA" / CUDA not available**
+```bash
+pip uninstall torch torchvision torchaudio -y
+pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu121
+python check_torch.py
+```
+
+**Out of Memory (OOM) when running Exercise 3.1**
+```python
+pipe.enable_sequential_cpu_offload()  # slower but uses less VRAM
+# or reduce steps: num_inference_steps=16
+```
+
+**`ModuleNotFoundError`**
+```bash
+# Make sure venv is activated, then:
+pip install -r requirements.txt          # Week 1-2
+pip install -r requirements-cuda.txt ... # Week 3
+```
+
+**`.env` / API key not found**
+```bash
+copy .env.example .env   # Windows
+cp .env.example .env     # macOS/Linux
+# then fill in your keys
+```
+
 ## 📝 Important Notes
 
-- **First Run**: Downloads ~50GB of models. May take 10-30 minutes depending on internet speed.
-- **Caching**: Models are cached locally in `~/.cache/huggingface/` and reused between runs.
-- **GPU Requirement**: Requires CUDA compute capability 7.0+ (RTX 20-series or newer).
-- **VRAM Allocation**: Models allocate and deallocate VRAM dynamically; monitor with `nvidia-smi`.
-- **Privacy**: All computation happens locally — no data sent to external services.
+- **First Run (Ex 3.1)**: Downloads ~50GB of models — may take 10–30 min. Cached in `~/.cache/huggingface/` for reuse.
+- **GPU Requirement**: CUDA compute capability 7.0+ (RTX 20-series or newer), 12GB VRAM.
+- **Privacy (Ex 3.1)**: All computation is local — no data sent to external services.
 
 ## 🤝 Learning Notes
 
