@@ -24,18 +24,19 @@ The course teaches:
 
 ```
 LLM-Engineering-Exercise/
-├── Week_1/                           # Week 1: LLM Fundamentals
-│   ├── Day_1_*.ipynb                # Introduction & OpenAI API
-│   ├── Day_2_*.ipynb                # Prompt engineering basics
-│   └── ...
-├── Week_2/                           # Week 2: Advanced Applications
-│   ├── Day_1_*.py                   # LangChain chains
-│   ├── Day_2_*.py                   # Tool use & function calling
-│   ├── Day_3_*.py                   # Multi-provider orchestration
-│   └── ...
-├── Week_3/                           # Week 3: GPU & Multimodal
-│   └── Exercise_3_1.py              # GPU diffusion models (local)
-├── Exercise_3_1.py                  # 🚀 SDXL on Local GPU (main)
+├── Exercise_1.1.py                  # Week 1: Basic LLM API calls
+├── Exercise_1.2.py                  # Week 1: Prompt engineering
+├── Exercise_1.5.py                  # Week 1: Token counting
+├── Exercise_1.5v2.py                # Week 1: Cost estimation
+├── Exercise_1.6.py                  # Week 1: Building applications
+├── Exercise_2.1.py                  # Week 2: LangChain basics
+├── Exercise_2.2.py                  # Week 2: Tool use & function calling
+├── Exercise_2.3.py                  # Week 2: Multi-provider orchestration
+├── Exercise_2.4.py                  # Week 2: Stateful chatbots
+├── Exercise_2.5.py                  # Week 2: Error handling
+├── Exercise_2.6.py                  # Week 2: KeyCraft chatbot (LangChain)
+├── Exercise_3_1.py                  # 🚀 Week 3: SDXL on Local GPU
+├── outputs/                         # Generated images and audio
 ├── requirements_cuda.txt            # GPU-accelerated dependencies
 ├── requirements.txt                 # Standard dependencies
 ├── pyproject.toml                   # Project configuration
@@ -206,17 +207,17 @@ num_inference_steps=16  # Instead of 30
 ## 📚 Course Structure
 
 ### Week 1: Foundations
-- Day 1: LLM introduction, OpenAI API setup
-- Day 2: Prompt engineering fundamentals
-- Day 3: Token counting and cost estimation
-- Day 4-5: Building your first LLM application
+- Day 1 (Exercise_1.1): LLM introduction, OpenAI API setup
+- Day 2 (Exercise_1.2): Prompt engineering fundamentals
+- Day 3-5 (Exercise_1.5, 1.5v2, 1.6): Token counting, cost estimation, and applications
 
 ### Week 2: Production Techniques
-- Day 1: LangChain basics and chains
-- Day 2: Tool use and function calling
-- Day 3: Multi-provider orchestration (OpenAI + Anthropic)
-- Day 4: Building stateful chatbots
-- Day 5: Error handling and retry strategies
+- Day 1 (Exercise_2.1): LangChain basics and chains
+- Day 2 (Exercise_2.2): Tool use and function calling
+- Day 3 (Exercise_2.3): Multi-provider orchestration (OpenAI + Anthropic)
+- Day 4 (Exercise_2.4): Building stateful chatbots
+- Day 5 (Exercise_2.5): Error handling and retry strategies
+- Day 6 (Exercise_2.6): KeyCraft chatbot with LangChain tool use
 
 ### Week 3: Advanced & Multimodal
 - **Day 1**: Local GPU diffusion models (SDXL) ✅
