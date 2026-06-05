@@ -9,9 +9,34 @@ import torch
 import subprocess
 from datetime import datetime
 from pathlib import Path
+from enum import Enum
 
 OUTPUT_DIR = Path("outputs")
 OUTPUT_DIR.mkdir(exist_ok=True)
+
+
+# ============================================================================
+# IMAGE STYLE — change ACTIVE_STYLE to switch all prompts at once
+# ============================================================================
+class ImageStyle(Enum):
+    CYBERPUNK          = "A class of data scientists learning AI engineering in a futuristic cyberpunk style, neon lights, holographic displays, high-tech classroom, cinematic atmosphere"
+    PIXAR              = "A class of data scientists learning AI engineering in a colorful 3D animated style, expressive characters, modern classroom, Pixar-inspired quality"
+    ANIME              = "A class of data scientists learning AI engineering in a detailed anime style, vibrant colors, futuristic learning environment"
+    STUDIO_GHIBLI      = "A class of data scientists learning AI engineering in a whimsical hand-painted fantasy style, warm lighting, detailed environment"
+    ISOMETRIC          = "A class of data scientists learning AI engineering in a modern isometric illustration style, clean design, technology-focused workspace"
+    FLAT_VECTOR        = "A class of data scientists learning AI engineering in a clean flat vector illustration style, minimalistic, corporate learning environment"
+    CORPORATE_TECH     = "A class of data scientists learning AI engineering in a modern corporate technology illustration style, professional, clean, blue and purple gradients"
+    DIGITAL_PAINTING   = "A class of data scientists learning AI engineering in a highly detailed digital painting style, dramatic lighting, realistic textures"
+    PHOTOREALISTIC     = "A class of data scientists learning AI engineering, photorealistic, professional training session, realistic people, modern classroom, shallow depth of field"
+    RETRO_FUTURISM     = "A class of data scientists learning AI engineering in retro-futuristic style, synthwave aesthetics, neon grid backgrounds"
+    VAPORWAVE          = "A class of data scientists learning AI engineering in vaporwave aesthetic, pastel neon colors, futuristic digital atmosphere"
+    LOW_POLY           = "A class of data scientists learning AI engineering in low-poly 3D style, geometric shapes, modern technology environment"
+    WATERCOLOR         = "A class of data scientists learning AI engineering in watercolor illustration style, soft colors, artistic brush strokes"
+    SKETCH             = "A class of data scientists learning AI engineering in hand-drawn sketch style, creative educational concept"
+    INFOGRAPHIC        = "A class of data scientists learning AI engineering in infographic illustration style, educational visuals, data visualization elements"
+
+
+ACTIVE_STYLE = ImageStyle.STUDIO_GHIBLI
 
 # ============================================================================
 # 1. GPU DETECTION
@@ -85,7 +110,8 @@ def run_sdxl_turbo():
         )
         pipe.to("cuda")
 
-        prompt = "A class of students learning AI engineering in a vibrant Studio Ghibli Inspired style"
+        prompt = ACTIVE_STYLE.value
+        print(f"Style:  {ACTIVE_STYLE.name}")
         print(f"Prompt: {prompt}")
 
         image = pipe(
@@ -127,7 +153,8 @@ def run_sdxl_base():
         )
         pipe.to("cuda")
 
-        prompt = "A class of data scientists learning AI engineering in a vibrant high-energy Studio Ghibli Inspired style"
+        prompt = ACTIVE_STYLE.value
+        print(f"Style:  {ACTIVE_STYLE.name}")
         print(f"Prompt: {prompt}")
 
         image = pipe(prompt=prompt, num_inference_steps=30).images[0]
@@ -181,8 +208,8 @@ def run_sdxl_base_refiner():
 
         n_steps = 40
         high_noise_frac = 0.8
-        prompt = "A class of data scientists learning AI engineering in a vibrant high-energy Studio Ghibli Inspired Style"
-
+        prompt = ACTIVE_STYLE.value
+        print(f"Style:  {ACTIVE_STYLE.name}")
         print(f"Prompt: {prompt}")
         print(f"Running base model with {int(n_steps * high_noise_frac)} steps...")
 
