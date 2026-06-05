@@ -37,12 +37,13 @@ LLM-Engineering-Exercise/
 ├── Exercise_2.6.py                  # Week 2: KeyCraft chatbot (LangChain)
 ├── Exercise_3_1.py                  # 🚀 Week 3: SDXL on Local GPU
 ├── outputs/                         # Generated images and audio
-├── requirements_cuda.txt            # GPU-accelerated dependencies
-├── requirements.txt                 # Standard dependencies
-├── pyproject.toml                   # Project configuration
+├── requirements.txt                 # Standard dependencies (Week 1-2)
+├── requirements_cuda.txt            # GPU-accelerated dependencies (Week 3)
+├── REQUIREMENTS.md                  # Detailed setup & installation guide
+├── README.md                        # This file
 ├── .env.example                     # Environment variables template
 ├── .gitignore                       # Git ignore rules
-└── README.md                        # This file
+└── pyproject.toml                   # Project configuration
 ```
 
 ## 🚀 Exercise 3.1: Local GPU Diffusion & Text-to-Speech
@@ -71,62 +72,46 @@ This represents Week 3 Day 1 content: moving beyond cloud APIs to local, cost-ef
 - **Disk**: ~50GB initial (HuggingFace model cache)
 - **Internet**: Required for first download, subsequent runs use cache
 
-### Installation
+### Quick Start
 
-#### Step 1: Install Python 3.12
+**For detailed setup instructions, see [REQUIREMENTS.md](REQUIREMENTS.md)**
+
+Quick installation for Week 1-2:
 
 ```bash
-# Windows: Download installer or use package manager
-winget install Python.Python.3.12
+# 1. Clone repo
+git clone https://github.com/khthana/LLM-Engineering-Exercise.git
+cd LLM-Engineering-Exercise
 
-# macOS
-brew install python@3.12
+# 2. Create virtual environment
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1  # Windows PowerShell
 
-# Linux (Ubuntu/Debian)
-sudo apt-get install python3.12 python3.12-venv
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Set API keys
+copy .env.example .env
+# Edit .env and add your API keys
 ```
 
-#### Step 2: Create Virtual Environment
+**For Week 3 (GPU-based exercises):**
 
 ```bash
-# Create isolated Python environment
-python3.12 -m venv .venv
-
-# Activate
-# Windows (PowerShell)
-.\.venv\Scripts\Activate.ps1
-
-# macOS/Linux
-source .venv/bin/activate
-```
-
-#### Step 3: Install Dependencies
-
-```bash
-# Install PyTorch with CUDA 12.1 support + ML libraries
+# Install CUDA-enabled PyTorch + diffusers
 pip install -r requirements_cuda.txt --extra-index-url https://download.pytorch.org/whl/cu121
 
-# Or install manually
-pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 \
-  --index-url https://download.pytorch.org/whl/cu121
-pip install transformers==4.46.0 diffusers==0.31.0 datasets accelerate \
-  huggingface-hub soundfile sentencepiece
+# Verify GPU setup
+python check_torch.py
 ```
 
-#### Step 4: Optional - Set HuggingFace Token
+**System Requirements:**
+- Python 3.12+
+- 16GB+ RAM (32GB recommended)
+- GPU with 12GB VRAM (optional, for Week 3)
+- API keys from OpenAI, Anthropic, HuggingFace, etc.
 
-For increased rate limits and private model access:
-
-```bash
-# Create free account at https://huggingface.co
-# Generate access token at https://huggingface.co/settings/tokens
-
-# Set token (PowerShell)
-$env:HF_TOKEN='hf_your_token_here'
-
-# Set token (Bash)
-export HF_TOKEN='hf_your_token_here'
-```
+👉 **See [REQUIREMENTS.md](REQUIREMENTS.md) for complete setup guide, API key instructions, and troubleshooting.**
 
 ### Running
 
