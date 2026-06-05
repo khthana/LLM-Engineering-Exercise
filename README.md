@@ -37,8 +37,8 @@ LLM-Engineering-Exercise/
 ├── Exercise_2.6.py                  # Week 2: KeyCraft chatbot (LangChain)
 ├── Exercise_3_1.py                  # 🚀 Week 3: SDXL on Local GPU
 ├── outputs/                         # Generated images and audio
-├── requirements.txt                 # Standard dependencies (Week 1-2)
-├── requirements_cuda.txt            # GPU-accelerated dependencies (Week 3)
+├── requirements.txt                 # Base dependencies (Week 1-2)
+├── requirements-cuda.txt            # GPU dependencies (Week 3 - extends requirements.txt)
 ├── REQUIREMENTS.md                  # Detailed setup & installation guide
 ├── README.md                        # This file
 ├── .env.example                     # Environment variables template
@@ -76,7 +76,7 @@ This represents Week 3 Day 1 content: moving beyond cloud APIs to local, cost-ef
 
 **For detailed setup instructions, see [REQUIREMENTS.md](REQUIREMENTS.md)**
 
-Quick installation for Week 1-2:
+#### Week 1-2 Setup (API-based)
 
 ```bash
 # 1. Clone repo
@@ -87,7 +87,7 @@ cd LLM-Engineering-Exercise
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1  # Windows PowerShell
 
-# 3. Install dependencies
+# 3. Install base dependencies
 pip install -r requirements.txt
 
 # 4. Set API keys
@@ -95,11 +95,11 @@ copy .env.example .env
 # Edit .env and add your API keys
 ```
 
-**For Week 3 (GPU-based exercises):**
+#### Week 3 Setup (GPU-accelerated)
 
 ```bash
-# Install CUDA-enabled PyTorch + diffusers
-pip install -r requirements_cuda.txt --extra-index-url https://download.pytorch.org/whl/cu121
+# Install GPU dependencies (includes everything from requirements.txt + PyTorch CUDA)
+pip install -r requirements-cuda.txt --extra-index-url https://download.pytorch.org/whl/cu121
 
 # Verify GPU setup
 python check_torch.py

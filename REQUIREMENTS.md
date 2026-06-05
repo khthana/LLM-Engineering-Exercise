@@ -36,28 +36,27 @@ python3.12 -m venv .venv
 source .venv/bin/activate
 ```
 
-### 3. Install Base Dependencies
+### 3. Install Dependencies
+
+Choose based on your use case:
+
+**Option A: Week 1-2 (API-based, no GPU)**
 
 ```bash
-# Install basic ML libraries (for Week 1-2)
 pip install -r requirements.txt
-
-# Or use the included uv package manager (faster)
-pip install uv
-uv pip install -r requirements.txt
 ```
 
-### 4. Install GPU Dependencies (Optional - for Week 3)
-
-Only needed if you have NVIDIA GPU and want to run local diffusion models:
+**Option B: Week 3 (GPU-accelerated, all features)**
 
 ```bash
 # Install PyTorch with CUDA 12.1 support
-pip install -r requirements_cuda.txt --extra-index-url https://download.pytorch.org/whl/cu121
+pip install -r requirements-cuda.txt --extra-index-url https://download.pytorch.org/whl/cu121
 
 # Verify CUDA installation
 python check_torch.py
 ```
+
+**Note:** `requirements-cuda.txt` includes everything from `requirements.txt` + GPU/torch support. You only need one.
 
 ### 5. Set Up Environment Variables
 
@@ -92,28 +91,32 @@ HF_TOKEN=hf_your-actual-token
 
 ## Dependencies Overview
 
-### `requirements.txt` (Week 1-2)
+### `requirements.txt` (Week 1-2 - Base)
 
-Core ML/NLP libraries:
-- `python-dotenv` — Environment variable management
-- `openai` — OpenAI API client
+Core API clients and LLM orchestration:
+- `openai` — OpenAI API client (GPT-4, GPT-3.5)
 - `anthropic` — Anthropic Claude API
+- `google-generativeai` — Google Gemini API
 - `langchain` — LLM orchestration framework
 - `langchain-community` — Extended LangChain tools
+- `langchain-openai`, `langchain-anthropic` — Provider integrations
+- `python-dotenv` — Environment variable management
 - `requests` — HTTP library
+- `pydantic` — Data validation
 
-### `requirements_cuda.txt` (Week 3 - GPU only)
+### `requirements-cuda.txt` (Week 3 - Complete with GPU)
 
-Includes everything above PLUS:
+Includes everything from `requirements.txt` PLUS GPU/ML libraries:
 - `torch==2.5.1` — Deep learning framework (CUDA 12.1)
 - `torchvision==0.20.1` — Computer vision utilities
 - `torchaudio==2.5.1` — Audio processing
-- `transformers==4.46.0` — HuggingFace models
-- `diffusers==0.31.0` — Stable Diffusion pipelines
-- `accelerate` — Distributed training utilities
-- `safetensors` — Safe tensor serialization
-- `soundfile` — Audio I/O
-- `datasets` — HuggingFace datasets
+- `transformers==4.46.0` — HuggingFace model inference
+- `diffusers==0.31.0` — Stable Diffusion image generation
+- `accelerate` — GPU optimization utilities
+- `safetensors` — Safe tensor serialization (faster loading)
+- `soundfile` — Audio file I/O
+- `datasets` — HuggingFace dataset utilities
+- `peft` — Parameter-efficient fine-tuning
 
 ## Verification
 
@@ -130,7 +133,12 @@ which python  # or 'where python' on Windows
 
 ### Check Dependencies
 ```bash
-pip list  # Show all installed packages
+# Show all installed packages
+pip list
+
+# Check specific package
+pip show torch
+pip show openai
 ```
 
 ### Check GPU (if you have one)
@@ -148,13 +156,17 @@ python check_torch.py
   - macOS: `brew install python@3.12`
   - Linux: `sudo apt-get install python3.12`
 
-### "Torch not compiled with CUDA"
+### "Torch not compiled with CUDA" or "CUDA not available"
 ```bash
 # Uninstall wrong version
-pip uninstall torch torchvision torchaudio
+pip uninstall torch torchvision torchaudio -y
 
-# Reinstall with CUDA 12.1
-pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121
+# Reinstall correct version with CUDA 12.1
+pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 \
+  --index-url https://download.pytorch.org/whl/cu121
+
+# Verify
+python check_torch.py
 ```
 
 ### "ModuleNotFoundError: No module named 'openai'"
