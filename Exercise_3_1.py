@@ -10,6 +10,9 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 from enum import Enum
+from dotenv import load_dotenv
+
+load_dotenv()
 
 OUTPUT_DIR = Path("outputs")
 OUTPUT_DIR.mkdir(exist_ok=True)
@@ -36,7 +39,7 @@ class ImageStyle(Enum):
     INFOGRAPHIC        = "A class of data scientists learning AI engineering in infographic illustration style, educational visuals, data visualization elements"
 
 
-ACTIVE_STYLE = ImageStyle.STUDIO_GHIBLI
+ACTIVE_STYLE = ImageStyle.PIXAR
 
 # ============================================================================
 # 1. GPU DETECTION
@@ -250,7 +253,7 @@ def run_text_to_speech():
 
     try:
         from transformers import pipeline
-        from datasets import load_dataset
+        from huggingface_hub import hf_hub_download
         import soundfile as sf
 
         print("Loading text-to-speech model...")
@@ -261,14 +264,21 @@ def run_text_to_speech():
         )
 
         print("Loading speaker embeddings...")
-        embeddings_dataset = load_dataset(
-            "matthijs/cmu-arctic-xvectors",
-            split="validation",
-            trust_remote_code=True
+        # load_dataset no longer supports trust_remote_code for this dataset
+        # read xvectors directly from zip file instead
+        import zipfile
+        import numpy as np
+        zip_path = hf_hub_download(
+            repo_id="matthijs/cmu-arctic-xvectors",
+            filename="spkrec-xvect.zip",
+            repo_type="dataset"
         )
-        speaker_embedding = torch.tensor(
-            embeddings_dataset[7306]["xvector"]
-        ).unsqueeze(0)
+        with zipfile.ZipFile(zip_path) as z:
+            npy_files = sorted(f for f in z.namelist() if f.endswith(".npy"))
+            idx = min(7306, len(npy_files) - 1)
+            with z.open(npy_files[idx]) as f:
+                xvector = np.load(f)
+        speaker_embedding = torch.tensor(xvector).unsqueeze(0)
 
         text = "Hi to an artificial intelligence engineer, on the way to mastery!"
         print(f"Text: {text}")
