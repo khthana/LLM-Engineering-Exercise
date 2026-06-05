@@ -46,40 +46,12 @@ LLM-Engineering-Exercise/
 └── pyproject.toml                   # Project configuration
 ```
 
-## 🚀 Exercise 3.1: Local GPU Diffusion & Text-to-Speech
+## 🚀 Quick Start
 
-### Overview
-
-**Exercise_3_1.py** demonstrates state-of-the-art generative AI on consumer hardware. It runs Stability AI's SDXL model family locally on an RTX 3060 (12GB VRAM), with memory optimization techniques and multiple generation strategies.
-
-This represents Week 3 Day 1 content: moving beyond cloud APIs to local, cost-effective inference with fine-grained control.
-
-### Features
-
-| Model | Steps | Speed | Quality | VRAM |
-|-------|-------|-------|---------|------|
-| **SDXL Turbo** | 4 | ~5s | Good | ~2GB |
-| **SDXL Base 1.0** | 30 | ~20s | Excellent | ~8-10GB |
-| **Base + Refiner** | 32+8 | ~60s | Best | ~10GB |
-| **SpeechT5 TTS** | N/A | ~2s | Good | ~1GB |
-
-### Hardware Requirements
-
-- **GPU**: NVIDIA GPU (RTX 20-series or newer recommended)
-- **VRAM**: Minimum 12GB (8-10GB for models + 2-4GB system overhead)
-- **CUDA**: 12.1 or compatible
-- **System RAM**: 16GB+ recommended
-- **Disk**: ~50GB initial (HuggingFace model cache)
-- **Internet**: Required for first download, subsequent runs use cache
-
-### Quick Start
-
-**For detailed setup instructions, see [REQUIREMENTS.md](REQUIREMENTS.md)**
-
-#### Week 1-2 Setup (API-based)
+**For full setup instructions, see [REQUIREMENTS.md](REQUIREMENTS.md)**
 
 ```bash
-# 1. Clone repo
+# 1. Clone & enter repo
 git clone https://github.com/khthana/LLM-Engineering-Exercise.git
 cd LLM-Engineering-Exercise
 
@@ -87,129 +59,180 @@ cd LLM-Engineering-Exercise
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1  # Windows PowerShell
 
-# 3. Install base dependencies
+# 3a. Week 1-2: API-based exercises
 pip install -r requirements.txt
 
-# 4. Set API keys
-copy .env.example .env
-# Edit .env and add your API keys
-```
-
-#### Week 3 Setup (GPU-accelerated)
-
-```bash
-# Install GPU dependencies (includes everything from requirements.txt + PyTorch CUDA)
+# 3b. Week 3: GPU exercises (includes everything above + PyTorch CUDA)
 pip install -r requirements-cuda.txt --extra-index-url https://download.pytorch.org/whl/cu121
 
-# Verify GPU setup
-python check_torch.py
+# 4. Set API keys
+copy .env.example .env   # then edit .env with your actual keys
 ```
 
-**System Requirements:**
-- Python 3.12+
-- 16GB+ RAM (32GB recommended)
-- GPU with 12GB VRAM (optional, for Week 3)
-- API keys from OpenAI, Anthropic, HuggingFace, etc.
+## 📚 Exercises
 
-👉 **See [REQUIREMENTS.md](REQUIREMENTS.md) for complete setup guide, API key instructions, and troubleshooting.**
+### Week 1: LLM Fundamentals
 
-### Running
+---
+
+#### Exercise 1.1 — Multi-Provider Website Summarizer
+
+Scrapes a webpage with BeautifulSoup and summarizes the content using a chosen LLM provider. Supports OpenAI, Claude, Gemini, OpenRouter, and Ollama (local) from a single config.
+
+**Key concepts:** API clients, provider abstraction, web scraping, prompt design
 
 ```bash
-# Activate environment first
-source .venv/bin/activate  # or .\.venv\Scripts\Activate.ps1
-
-# Run all exercises
-python Exercise_3_1.py
+python Exercise_1.1.py
 ```
 
-### Output Files
+---
 
-The script generates outputs in `outputs/` subfolder:
-- **outputs/output_sdxl_turbo.png** — Fast generation (4 steps, ~5 sec)
-- **outputs/output_sdxl_base.png** — Quality generation (30 steps, ~20 sec)
-- **outputs/output_sdxl_base_refiner.png** — Refined quality (80/20 split, ~60 sec)
-- **outputs/output_speech.wav** — Text-to-speech audio (optional)
+#### Exercise 1.2 — Multi-Provider LLM Manager (OOP)
 
-Example prompt: *"A class of data scientists learning AI engineering in a vibrant pop-art style"*
+Refactors Exercise 1.1 into a proper OOP `LLMManager` class. Sends the same prompt to multiple providers in parallel using `concurrent.futures` and compares responses side-by-side.
 
-### Understanding the Code
+**Key concepts:** OOP design, parallel requests, dataclasses, prompt library
 
-**GPU Memory Optimization** (lines 164-165)
-```python
-# Trade computation time for memory - critical for RTX 3060
-base.enable_attention_slicing()
-```
-
-**Float16 Precision** (throughout)
-```python
-# Reduces model size by ~50% with minimal quality loss
-torch_dtype=torch.float16,
-variant="fp16"
-```
-
-**Two-Stage Generation** (lines 179-199)
-```python
-# Base model (80%): Denoises from high noise → medium noise
-# Refiner (20%): Denoises from medium → low noise (final image)
-# Higher quality than single-stage at same total steps
-```
-
-**Pipeline Cleanup** (lines 100, 137, 206)
-```python
-# Essential - prevents memory accumulation between models
-torch.cuda.empty_cache()
-del pipe
-```
-
-### Troubleshooting
-
-**"Torch not compiled with CUDA enabled"**
 ```bash
-# Wrong version installed - reinstall with CUDA
-pip uninstall torch torchvision torchaudio
-pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121
+python Exercise_1.2.py
 ```
 
-**Out of Memory (OOM) Error**
-```python
-# Option 1: Enable CPU offloading (slower but fits in 12GB)
-pipe.enable_sequential_cpu_offload()
+---
 
-# Option 2: Reduce inference steps
-num_inference_steps=16  # Instead of 30
+#### Exercise 1.5 — Company Brochure Generator
 
-# Option 3: Use SDXL Turbo (only 4 steps)
-# Run SDXL Turbo instead of Base
+3-stage pipeline: (1) scrape all links from a company homepage, (2) LLM selects relevant pages (About, Careers, etc.) as JSON, (3) LLM generates a polished Markdown brochure with streaming output.
+
+**Key concepts:** Chained LLM calls, structured output (JSON), streaming, multi-step pipelines
+
+```bash
+python Exercise_1.5.py
 ```
 
-**Models not downloading**
-- Verify token: `echo $HF_TOKEN` or `$env:HF_TOKEN`
-- Check disk space: `df -h` (need ~50GB)
-- Check internet connection
-- Try manual download: `huggingface-cli download stabilityai/sdxl-turbo`
+---
 
-## 📚 Course Structure
+#### Exercise 1.5v2 — Company Brochure Generator (Multi-Provider)
 
-### Week 1: Foundations
-- Day 1 (Exercise_1.1): LLM introduction, OpenAI API setup
-- Day 2 (Exercise_1.2): Prompt engineering fundamentals
-- Day 3-5 (Exercise_1.5, 1.5v2, 1.6): Token counting, cost estimation, and applications
+Same pipeline as Exercise 1.5 but uses `LLMManager` from Exercise 1.2 instead of a hardcoded OpenAI client. Defaults to Ollama (local) — no API key required.
+
+**Key concepts:** Reusable components, local inference with Ollama, provider swapping
+
+```bash
+python Exercise_1.5v2.py
+```
+
+---
+
+#### Exercise 1.6 — Thai News Summarizer
+
+Scrapes [thaipost.net](https://thaipost.net) across 3 levels (categories → article list → article content), filters to today's articles, groups by category, then uses an LLM to summarize each article with streaming output.
+
+**Key concepts:** Deep scraping, date filtering, concurrent fetching, category grouping, LLM summarization
+
+```bash
+python Exercise_1.6.py
+```
+
+---
 
 ### Week 2: Production Techniques
-- Day 1 (Exercise_2.1): LangChain basics and chains
-- Day 2 (Exercise_2.2): Tool use and function calling
-- Day 3 (Exercise_2.3): Multi-provider orchestration (OpenAI + Anthropic)
-- Day 4 (Exercise_2.4): Building stateful chatbots
-- Day 5 (Exercise_2.5): Error handling and retry strategies
-- Day 6 (Exercise_2.6): KeyCraft chatbot with LangChain tool use
 
-### Week 3: Advanced & Multimodal
-- **Day 1**: Local GPU diffusion models (SDXL) ✅
-- Day 2: Local LLMs with Ollama
-- Day 3: RAG (Retrieval Augmented Generation)
-- Day 4: Image understanding with vision models
-- Day 5: Production deployment patterns
+---
+
+#### Exercise 2.1 — Streaming Chat with Multiple Providers
+
+Builds a streaming chat interface that works across OpenAI, Claude, Gemini, OpenRouter, and Ollama. Abstracts away provider differences so the same conversation loop works everywhere.
+
+**Key concepts:** Streaming responses, provider abstraction, chat history, token/cost tracking
+
+```bash
+python Exercise_2.1.py
+```
+
+---
+
+#### Exercise 2.2 — Unified LLM Interface with LiteLLM
+
+Replaces manual provider wrappers with [LiteLLM](https://docs.litellm.ai/) — a single library that routes to 100+ models with one API. Demonstrates how production apps abstract away provider-specific SDKs.
+
+**Key concepts:** LiteLLM, provider-agnostic code, drop-in replacement for OpenAI SDK
+
+```bash
+python Exercise_2.2.py
+```
+
+---
+
+#### Exercise 2.3 — Multi-Provider Chat with LangChain
+
+Replaces LiteLLM with LangChain's chat model wrappers (`ChatOpenAI`, `ChatAnthropic`, `ChatGoogleGenerativeAI`, `ChatOllama`). Sends the same messages to all providers in parallel and displays results.
+
+**Key concepts:** LangChain chat models, `HumanMessage`/`SystemMessage`, parallel execution
+
+```bash
+python Exercise_2.3.py
+```
+
+---
+
+#### Exercise 2.4 — Gradio Chat UI
+
+Wraps the multi-provider LLM client in a Gradio web interface. Adds a model selector dropdown, reasoning effort control, dark mode, and streaming output directly in the browser.
+
+**Key concepts:** Gradio `gr.Blocks`, streaming UI, model selector, dark mode CSS injection
+
+```bash
+python Exercise_2.4.py
+```
+
+---
+
+#### Exercise 2.5 — KeyCraft Chatbot with Tool Use
+
+Adds LangChain **tool calling** to the Gradio chatbot. The `KeyBot` AI assistant can call `list_keyboards()` and `list_mice()` tools to fetch live product data before responding — the LLM decides when and what to call.
+
+**Key concepts:** `@tool` decorator, LangChain tool calling, `ToolMessage`, agentic loops, chatbot persona
+
+```bash
+python Exercise_2.5.py
+```
+
+---
+
+#### Exercise 2.6 — KeyCraft Chatbot with SQLite Backend
+
+Upgrades Exercise 2.5 by replacing in-memory product dicts with a **SQLite database**. Expands catalog to keyboards, mice, headsets, and mousepads. Tools now query the DB at runtime.
+
+**Key concepts:** SQLite with LangChain tools, persistent data, expanded tool set, production-style architecture
+
+```bash
+python Exercise_2.6.py
+```
+
+---
+
+### Week 3: GPU & Local Models
+
+---
+
+#### Exercise 3.1 — Local Diffusion Models on GPU ✅
+
+Runs Stability AI's SDXL model family locally on an RTX 3060 (12GB VRAM). Three generation modes of increasing quality, plus Microsoft SpeechT5 text-to-speech. Uses float16 precision and attention slicing to fit within VRAM limits.
+
+**Key concepts:** Stable Diffusion XL, two-stage base+refiner pipeline, float16, attention slicing, VRAM management
+
+| Mode | Steps | Speed | VRAM |
+|---|---|---|---|
+| SDXL Turbo | 4 | ~5s | ~2GB |
+| SDXL Base | 30 | ~20s | ~8GB |
+| Base + Refiner | 32+8 | ~60s | ~10GB |
+
+```bash
+python Exercise_3_1.py
+# Outputs saved to outputs/
+```
+
+> **Requires:** NVIDIA GPU with 12GB VRAM, CUDA 12.1, `requirements-cuda.txt`
 
 ## 🛠️ Technology Stack
 
