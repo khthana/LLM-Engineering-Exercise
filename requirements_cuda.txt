@@ -1,0 +1,12 @@
+torch==2.5.1
+torchvision==0.20.1
+torchaudio==2.5.1
+transformers==4.40.0
+diffusers==0.31.0
+datasets>=3.6.0
+huggingface-hub>=0.24.0
+soundfile>=0.12.1
+sentencepiece>=0.2.0
+accelerate>=1.13.0
+safetensors>=0.4.0
+peft>=0.17.0
