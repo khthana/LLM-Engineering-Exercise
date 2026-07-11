@@ -24,23 +24,26 @@ The course teaches:
 
 ```
 LLM-Engineering-Exercise/
-├── Exercise_1.1.py                  # Week 1: Basic LLM API calls
-├── Exercise_1.2.py                  # Week 1: Prompt engineering
-├── Exercise_1.5.py                  # Week 1: Token counting
-├── Exercise_1.5v2.py                # Week 1: Cost estimation
-├── Exercise_1.6.py                  # Week 1: Building applications
-├── Exercise_2.1.py                  # Week 2: LangChain basics
-├── Exercise_2.2.py                  # Week 2: Tool use & function calling
-├── Exercise_2.3.py                  # Week 2: Multi-provider orchestration
-├── Exercise_2.4.py                  # Week 2: Stateful chatbots
-├── Exercise_2.5.py                  # Week 2: Error handling
-├── Exercise_2.6.py                  # Week 2: KeyCraft chatbot (LangChain)
-├── Exercise_3_1.py                  # 🚀 Week 3: SDXL on Local GPU
-├── Exercise_3.2.py                  # Week 3: HuggingFace Pipelines (9 tasks + Gradio)
-├── Exercise_3.3.py                  # Week 3: Tokenizers Explorer (Gradio)
-├── Exercise_3.4.py                  # Week 3: Models Explorer — 4-bit quant (Gradio)
-├── Exercise_3.5.py                  # Week 3: Meeting Minutes from Audio (Whisper + LLM, Gradio)
-├── Week_3_Day_5_Meeting_Minutes_product.ipynb  # Source notebook for Exercise 3.5
+├── week1/                           # Week 1: LLM Fundamentals
+│   ├── Exercise_1.1.py              #   Multi-provider website summarizer
+│   ├── Exercise_1.2.py              #   Multi-provider LLM Manager (OOP)
+│   ├── Exercise_1.5.py              #   Company brochure generator
+│   ├── Exercise_1.5v2.py            #   Brochure generator (multi-provider)
+│   └── Exercise_1.6.py              #   Thai news summarizer
+├── week2/                           # Week 2: Production Techniques
+│   ├── Exercise_2.1.py              #   Streaming chat (multi-provider)
+│   ├── Exercise_2.2.py              #   Unified interface with LiteLLM
+│   ├── Exercise_2.3.py              #   Multi-provider chat with LangChain
+│   ├── Exercise_2.4.py              #   Gradio chat UI
+│   ├── Exercise_2.5.py              #   KeyCraft chatbot with tool use
+│   └── Exercise_2.6.py              #   KeyCraft chatbot with SQLite
+├── week3/                           # Week 3: GPU & Local Models
+│   ├── Exercise_3.1.py              #   🚀 SDXL on local GPU
+│   ├── Exercise_3.2.py              #   HuggingFace Pipelines (9 tasks + Gradio)
+│   ├── Exercise_3.3.py              #   Tokenizers Explorer (Gradio)
+│   ├── Exercise_3.4.py              #   Models Explorer — 4-bit quant (Gradio)
+│   ├── Exercise_3.5.py              #   Meeting Minutes from Audio (Whisper + LLM)
+│   └── Week_3_Day_5_Meeting_Minutes_product.ipynb  # Source notebook for 3.5
 ├── outputs/                         # Generated images, audio, meeting minutes (.md)
 ├── samples/                         # Downloaded sample audio (denver_extract.mp3)
 ├── check_torch.py                   # Quick CUDA / torch sanity check
@@ -53,6 +56,9 @@ LLM-Engineering-Exercise/
 ├── .env.example                     # Environment variables template
 └── .gitignore                       # Git ignore rules
 ```
+
+> Exercises are grouped by week. Run them from the repo root so the `outputs/`,
+> `samples/` and `.env` paths resolve, e.g. `uv run week3/Exercise_3.5.py`.
 
 > **Dependency management:** This project uses **[uv](https://docs.astral.sh/uv/)**. The `requirements*.txt` files are kept for reference only — `pyproject.toml` + `uv.lock` are the source of truth.
 
@@ -72,8 +78,8 @@ uv sync
 # 3. Set API keys
 copy .env.example .env   # then edit .env with your actual keys
 
-# 4. Run any exercise inside the uv-managed environment
-uv run Exercise_3.4.py
+# 4. Run any exercise inside the uv-managed environment (from the repo root)
+uv run week3/Exercise_3.4.py
 ```
 
 > **CUDA note:** `pyproject.toml` pins the `torch` / `torchvision` / `torchaudio` stack to the
@@ -82,7 +88,7 @@ uv run Exercise_3.4.py
 
 ## 📚 Exercises
 
-> Run any exercise with **`uv run <file>`** (e.g. `uv run Exercise_1.1.py`). The `python <file>` commands below also work once the uv venv is activated.
+> Run any exercise from the repo root with **`uv run weekN/<file>`** (e.g. `uv run week1/Exercise_1.1.py`). Running from the root keeps the `outputs/`, `samples/` and `.env` paths working.
 
 ### Week 1: LLM Fundamentals
 
@@ -95,7 +101,7 @@ Scrapes a webpage with BeautifulSoup and summarizes the content using a chosen L
 **Key concepts:** API clients, provider abstraction, web scraping, prompt design
 
 ```bash
-python Exercise_1.1.py
+uv run week1/Exercise_1.1.py
 ```
 
 ---
@@ -107,7 +113,7 @@ Refactors Exercise 1.1 into a proper OOP `LLMManager` class. Sends the same prom
 **Key concepts:** OOP design, parallel requests, dataclasses, prompt library
 
 ```bash
-python Exercise_1.2.py
+uv run week1/Exercise_1.2.py
 ```
 
 ---
@@ -119,7 +125,7 @@ python Exercise_1.2.py
 **Key concepts:** Chained LLM calls, structured output (JSON), streaming, multi-step pipelines
 
 ```bash
-python Exercise_1.5.py
+uv run week1/Exercise_1.5.py
 ```
 
 ---
@@ -131,7 +137,7 @@ Same pipeline as Exercise 1.5 but uses `LLMManager` from Exercise 1.2 instead of
 **Key concepts:** Reusable components, local inference with Ollama, provider swapping
 
 ```bash
-python Exercise_1.5v2.py
+uv run week1/Exercise_1.5v2.py
 ```
 
 ---
@@ -143,7 +149,7 @@ Scrapes [thaipost.net](https://thaipost.net) across 3 levels (categories → art
 **Key concepts:** Deep scraping, date filtering, concurrent fetching, category grouping, LLM summarization
 
 ```bash
-python Exercise_1.6.py
+uv run week1/Exercise_1.6.py
 ```
 
 ---
@@ -159,7 +165,7 @@ Builds a streaming chat interface that works across OpenAI, Claude, Gemini, Open
 **Key concepts:** Streaming responses, provider abstraction, chat history, token/cost tracking
 
 ```bash
-python Exercise_2.1.py
+uv run week2/Exercise_2.1.py
 ```
 
 ---
@@ -171,7 +177,7 @@ Replaces manual provider wrappers with [LiteLLM](https://docs.litellm.ai/) — a
 **Key concepts:** LiteLLM, provider-agnostic code, drop-in replacement for OpenAI SDK
 
 ```bash
-python Exercise_2.2.py
+uv run week2/Exercise_2.2.py
 ```
 
 ---
@@ -183,7 +189,7 @@ Replaces LiteLLM with LangChain's chat model wrappers (`ChatOpenAI`, `ChatAnthro
 **Key concepts:** LangChain chat models, `HumanMessage`/`SystemMessage`, parallel execution
 
 ```bash
-python Exercise_2.3.py
+uv run week2/Exercise_2.3.py
 ```
 
 ---
@@ -195,7 +201,7 @@ Wraps the multi-provider LLM client in a Gradio web interface. Adds a model sele
 **Key concepts:** Gradio `gr.Blocks`, streaming UI, model selector, dark mode CSS injection
 
 ```bash
-python Exercise_2.4.py
+uv run week2/Exercise_2.4.py
 ```
 
 ---
@@ -207,7 +213,7 @@ Adds LangChain **tool calling** to the Gradio chatbot. The `KeyBot` AI assistant
 **Key concepts:** `@tool` decorator, LangChain tool calling, `ToolMessage`, agentic loops, chatbot persona
 
 ```bash
-python Exercise_2.5.py
+uv run week2/Exercise_2.5.py
 ```
 
 ---
@@ -219,7 +225,7 @@ Upgrades Exercise 2.5 by replacing in-memory product dicts with a **SQLite datab
 **Key concepts:** SQLite with LangChain tools, persistent data, expanded tool set, production-style architecture
 
 ```bash
-python Exercise_2.6.py
+uv run week2/Exercise_2.6.py
 ```
 
 ---
@@ -241,7 +247,7 @@ Runs Stability AI's SDXL model family locally on an RTX 3060 (12GB VRAM). Three 
 | Base + Refiner | 32+8 | ~60s | ~10GB |
 
 ```bash
-python Exercise_3_1.py
+uv run week3/Exercise_3.1.py
 # Outputs saved to outputs/
 ```
 
@@ -256,7 +262,7 @@ A 9-tab Gradio app exposing HuggingFace's high-level `pipeline()` API for common
 **Key concepts:** `transformers.pipeline`, task abstraction, lazy model loading, multi-task UI, SpeechT5 TTS
 
 ```bash
-python Exercise_3.2.py
+uv run week3/Exercise_3.2.py
 ```
 
 ---
@@ -268,7 +274,7 @@ A 5-tab Gradio app for understanding tokenization across model families (Llama 3
 **Key concepts:** `AutoTokenizer`, token IDs ↔ fragments, special/added vocab, chat templates, cross-model comparison
 
 ```bash
-python Exercise_3.3.py
+uv run week3/Exercise_3.3.py
 ```
 
 ---
@@ -280,7 +286,7 @@ A 2-tab Gradio app that loads instruct models locally (Llama 3.2 1B, Phi-4 Mini,
 **Key concepts:** `BitsAndBytesConfig` (NF4, double quant), `TextIteratorStreamer`, VRAM swapping, `get_memory_footprint()`
 
 ```bash
-python Exercise_3.4.py
+uv run week3/Exercise_3.4.py
 ```
 
 > **Requires:** `bitsandbytes` + CUDA torch (installed by `uv sync`) for 4-bit models. Llama and Gemma are gated — set `HF_TOKEN` in `.env`.
@@ -299,7 +305,7 @@ you can upload/record your own. Finished minutes stream live and are saved to `o
 **Key concepts:** Whisper ASR pipeline, ffmpeg-free audio decoding + resampling, two-stage audio→text→summary pipeline, streaming generation, VRAM swapping
 
 ```bash
-uv run Exercise_3.5.py
+uv run week3/Exercise_3.5.py
 ```
 
 > **Requires:** CUDA torch + `bitsandbytes`. No OpenAI key needed (transcription is local). The default
