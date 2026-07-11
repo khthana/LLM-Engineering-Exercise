@@ -1,6 +1,6 @@
 # LLM Engineering Master - AI & Large Language Models
 
-![Python 3.12](https://img.shields.io/badge/Python-3.12-blue) ![PyTorch CUDA](https://img.shields.io/badge/PyTorch-2.5.1%2BCuda12.1-green) ![Status Active](https://img.shields.io/badge/Status-Active-brightgreen)
+![Python 3.12](https://img.shields.io/badge/Python-3.12-blue) ![PyTorch CUDA](https://img.shields.io/badge/PyTorch-2.12%2Bcu130-green) ![uv](https://img.shields.io/badge/managed%20by-uv-purple) ![Status Active](https://img.shields.io/badge/Status-Active-brightgreen)
 
 ## 📚 About This Project
 
@@ -36,37 +36,53 @@ LLM-Engineering-Exercise/
 ├── Exercise_2.5.py                  # Week 2: Error handling
 ├── Exercise_2.6.py                  # Week 2: KeyCraft chatbot (LangChain)
 ├── Exercise_3_1.py                  # 🚀 Week 3: SDXL on Local GPU
-├── outputs/                         # Generated images and audio
-├── requirements.txt                 # Base dependencies (Week 1-2)
-├── requirements-cuda.txt            # GPU dependencies (Week 3 - extends requirements.txt)
+├── Exercise_3.2.py                  # Week 3: HuggingFace Pipelines (9 tasks + Gradio)
+├── Exercise_3.3.py                  # Week 3: Tokenizers Explorer (Gradio)
+├── Exercise_3.4.py                  # Week 3: Models Explorer — 4-bit quant (Gradio)
+├── Exercise_3.5.py                  # Week 3: Meeting Minutes from Audio (Whisper + LLM, Gradio)
+├── Week_3_Day_5_Meeting_Minutes_product.ipynb  # Source notebook for Exercise 3.5
+├── outputs/                         # Generated images, audio, meeting minutes (.md)
+├── samples/                         # Downloaded sample audio (denver_extract.mp3)
+├── check_torch.py                   # Quick CUDA / torch sanity check
+├── pyproject.toml                   # Project + dependency definition (uv)
+├── uv.lock                          # Pinned dependency lockfile (uv)
+├── requirements.txt                 # Legacy pip deps (Week 1-2) — superseded by pyproject
+├── requirements-cuda.txt            # Legacy pip GPU deps — superseded by pyproject
 ├── README.md                        # This file
+├── CLAUDE.md                        # Guidance for AI coding agents
 ├── .env.example                     # Environment variables template
-├── .gitignore                       # Git ignore rules
-└── pyproject.toml                   # Project configuration
+└── .gitignore                       # Git ignore rules
 ```
 
+> **Dependency management:** This project uses **[uv](https://docs.astral.sh/uv/)**. The `requirements*.txt` files are kept for reference only — `pyproject.toml` + `uv.lock` are the source of truth.
+
 ## 🚀 Quick Start
+
+This project is managed with **[uv](https://docs.astral.sh/uv/)**. Install it first (`pip install uv` or see the uv docs), then:
 
 ```bash
 # 1. Clone & enter repo
 git clone https://github.com/khthana/LLM-Engineering-Exercise.git
 cd LLM-Engineering-Exercise
 
-# 2. Create virtual environment
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1  # Windows PowerShell
+# 2. Create the venv and install everything from pyproject.toml + uv.lock
+#    (CUDA torch is pulled automatically via the pinned cu130 index)
+uv sync
 
-# 3a. Week 1-2: API-based exercises
-pip install -r requirements.txt
-
-# 3b. Week 3: GPU exercises (includes everything above + PyTorch CUDA)
-pip install -r requirements-cuda.txt --extra-index-url https://download.pytorch.org/whl/cu121
-
-# 4. Set API keys
+# 3. Set API keys
 copy .env.example .env   # then edit .env with your actual keys
+
+# 4. Run any exercise inside the uv-managed environment
+uv run Exercise_3.4.py
 ```
 
+> **CUDA note:** `pyproject.toml` pins the `torch` / `torchvision` / `torchaudio` stack to the
+> **cu130** PyTorch index (see `[tool.uv.sources]`), so `uv sync` installs the GPU build instead
+> of the default CPU wheels. `uv run check_torch.py` verifies CUDA is available.
+
 ## 📚 Exercises
+
+> Run any exercise with **`uv run <file>`** (e.g. `uv run Exercise_1.1.py`). The `python <file>` commands below also work once the uv venv is activated.
 
 ### Week 1: LLM Fundamentals
 
@@ -229,7 +245,65 @@ python Exercise_3_1.py
 # Outputs saved to outputs/
 ```
 
-> **Requires:** NVIDIA GPU with 12GB VRAM, CUDA 12.1, `requirements-cuda.txt`
+> **Requires:** NVIDIA GPU with 12GB VRAM and a recent driver (CUDA 13.0 build via `uv sync`)
+
+---
+
+#### Exercise 3.2 — HuggingFace Pipelines Explorer ✅
+
+A 9-tab Gradio app exposing HuggingFace's high-level `pipeline()` API for common NLP and multi-modal tasks: sentiment analysis (incl. multilingual), named entity recognition, question answering, summarization, translation, zero-shot classification, text generation, image generation, and text-to-speech. Models are lazy-loaded on first use and cached.
+
+**Key concepts:** `transformers.pipeline`, task abstraction, lazy model loading, multi-task UI, SpeechT5 TTS
+
+```bash
+python Exercise_3.2.py
+```
+
+---
+
+#### Exercise 3.3 — Tokenizers Explorer ✅
+
+A 5-tab Gradio app for understanding tokenization across model families (Llama 3.1, Phi-4, DeepSeek V3.1, QwenCoder 2.5). Encodes text to token IDs and back, inspects vocab size and special tokens, applies chat templates, compares token counts side-by-side, and tokenizes source code. Runs entirely on CPU — no GPU required.
+
+**Key concepts:** `AutoTokenizer`, token IDs ↔ fragments, special/added vocab, chat templates, cross-model comparison
+
+```bash
+python Exercise_3.3.py
+```
+
+---
+
+#### Exercise 3.4 — Models Explorer (Quantization) ✅
+
+A 2-tab Gradio app that loads instruct models locally (Llama 3.2 1B, Phi-4 Mini, Gemma 3 270M, Qwen3 4B, DeepSeek-R1 Distill) with optional **4-bit quantization** via `bitsandbytes`. Tab 1 streams generated text token-by-token; Tab 2 inspects layer architecture and memory footprint. Only one model lives in VRAM at a time — switching auto-unloads the previous one.
+
+**Key concepts:** `BitsAndBytesConfig` (NF4, double quant), `TextIteratorStreamer`, VRAM swapping, `get_memory_footprint()`
+
+```bash
+python Exercise_3.4.py
+```
+
+> **Requires:** `bitsandbytes` + CUDA torch (installed by `uv sync`) for 4-bit models. Llama and Gemma are gated — set `HF_TOKEN` in `.env`.
+
+---
+
+#### Exercise 3.5 — Meeting Minutes from Audio ✅
+
+A 2-step Gradio pipeline that turns a meeting recording into formatted minutes, **fully local on GPU**:
+**(1)** transcribe the audio with **Whisper** (`medium.en` by default), then **(2)** feed the transcript
+to a 4-bit LLM (Phi-4 Mini by default; Llama 3.2 3B / Qwen3 4B selectable) to produce a summary,
+discussion points, takeaways, and action items with owners in Markdown. Audio is decoded with
+`soundfile` (no ffmpeg needed); a **"Load Denver sample"** button auto-downloads the course audio, or
+you can upload/record your own. Finished minutes stream live and are saved to `outputs/`.
+
+**Key concepts:** Whisper ASR pipeline, ffmpeg-free audio decoding + resampling, two-stage audio→text→summary pipeline, streaming generation, VRAM swapping
+
+```bash
+uv run Exercise_3.5.py
+```
+
+> **Requires:** CUDA torch + `bitsandbytes`. No OpenAI key needed (transcription is local). The default
+> LLM (Phi-4 Mini) is open; picking Llama 3.2 3B needs approved HF access + `HF_TOKEN`.
 
 ## 🔑 API Keys
 
@@ -243,16 +317,21 @@ python Exercise_3_1.py
 
 ## 🛠️ Technology Stack
 
+Versions below reflect the current `uv.lock`.
+
 | Component | Version | Use |
 |-----------|---------|-----|
 | **Python** | 3.12 | Runtime environment |
-| **PyTorch** | 2.5.1+cu121 | Deep learning with CUDA acceleration |
-| **Transformers** | 4.46+ | HuggingFace model loading and inference |
-| **Diffusers** | 0.31+ | Stable Diffusion pipelines and utilities |
-| **Anthropic SDK** | Latest | Claude API integration |
-| **OpenAI SDK** | Latest | GPT-4, GPT-3.5 integration |
-| **LangChain** | Latest | LLM orchestration and chaining |
-| **LlamaIndex** | Latest | RAG framework (as needed) |
+| **uv** | 0.11+ | Dependency & environment management |
+| **PyTorch** | 2.12.0+cu130 | Deep learning with CUDA 13.0 acceleration |
+| **Transformers** | 5.10+ | HuggingFace model loading and inference |
+| **Diffusers** | 0.37+ | Stable Diffusion pipelines and utilities |
+| **bitsandbytes** | 0.49+ | 4-bit / 8-bit quantization (Week 3 Day 4) |
+| **Accelerate** | 1.13+ | `device_map` + quantized model loading |
+| **Gradio** | 6.16+ | Web UIs for exercises (Week 2 Day 4+) |
+| **Anthropic SDK** | 0.105+ | Claude API integration |
+| **OpenAI SDK** | 2.41+ | GPT model integration |
+| **LangChain** | 1.3+ | LLM orchestration and chaining |
 | **Ollama** | Latest | Local LLM inference (Week 3 Day 2+) |
 
 ## 💡 Key Learnings
@@ -290,12 +369,19 @@ Running SDXL locally on RTX 3060:
 
 ## 🔧 Troubleshooting
 
-**"Torch not compiled with CUDA" / CUDA not available**
+**`torch.cuda.is_available()` is `False` / torch installed as `x.y.z+cpu`**
+The default PyPI `torch` is CPU-only. `pyproject.toml` already pins the CUDA (cu130) index, so a clean
+`uv sync` installs the GPU build. If a stray CPU torch slipped in, force the CUDA trio back:
 ```bash
-pip uninstall torch torchvision torchaudio -y
-pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu121
-python check_torch.py
+uv sync --reinstall
+# or, ad-hoc, let uv pick the right CUDA wheels:
+uv pip install --reinstall --torch-backend=auto torch torchvision torchaudio
+uv run check_torch.py   # should print cuda_available True
 ```
+
+**`Could not import module 'Phi3ForCausalLM'` (Exercise 3.4)**
+Transformers 5.x supports these models natively — do **not** pass `trust_remote_code=True`, or it pulls
+in 4.x-era remote code that fails to import. Exercise 3.4 already loads without it.
 
 **Out of Memory (OOM) when running Exercise 3.1**
 ```python
@@ -303,11 +389,15 @@ pipe.enable_sequential_cpu_offload()  # slower but uses less VRAM
 # or reduce steps: num_inference_steps=16
 ```
 
+**`PackageNotFoundError: No package metadata was found for bitsandbytes` (Exercise 3.4)**
+```bash
+# bitsandbytes is in pyproject.toml — a sync installs it:
+uv sync
+```
+
 **`ModuleNotFoundError`**
 ```bash
-# Make sure venv is activated, then:
-pip install -r requirements.txt          # Week 1-2
-pip install -r requirements-cuda.txt ... # Week 3
+uv sync   # reinstall everything from pyproject.toml + uv.lock
 ```
 
 **`.env` / API key not found**
@@ -331,10 +421,10 @@ This repository documents my progression through the LLM Engineering course:
 - Code is organized by day/topic for easy reference
 - Comments explain "why" rather than "what" (code is self-documenting)
 
-**Current Progress**: Week 3 Day 1 ✅ (Local GPU models)
+**Current Progress**: Week 3 Day 5 ✅ (Meeting Minutes from Audio — Whisper + local LLM)
 
 ---
 
-**Last Updated**: June 2026  
+**Last Updated**: July 2026  
 **Status**: 🟢 Active Learning  
-**Next Focus**: Week 3 Day 2 (Local Ollama models & RAG)
+**Next Focus**: Week 4 (Fine-tuning / LoRA & further projects)
