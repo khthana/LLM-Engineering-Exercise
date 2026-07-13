@@ -54,5 +54,8 @@ output_*.json
 # Downloaded sample data (e.g. denver_extract.mp3)
 samples/
 
+# Generated Chroma vector store (week5 RAG)
+week5/vector_db/
+
 # Model cache (optional - uncomment to exclude)
 # ~/.cache/huggingface/
